@@ -1,5 +1,6 @@
 // ============================================
 // МОДУЛЬ ТЕСТОВ (FINAL UX VERSION + RESET)
+// С кнопкой "Показать пояснение"
 // ============================================
 
 let currentTestQuestion = 0;
@@ -114,19 +115,48 @@ function renderTestQuestion() {
         answersDiv.appendChild(btn);
     });
 
-    // Д. Объяснение
+    // Д. Кнопка "Показать пояснение" (скрыта по умолчанию)
+    // Показывается только если есть пояснение и после ответа
+    const hasExplanation = q.explanation && q.explanation.trim() !== '';
+    
+    const showExplanationBtn = document.createElement('button');
+    showExplanationBtn.id = 'showExplanationBtn';
+    showExplanationBtn.innerHTML = '💡 Показать пояснение';
+    showExplanationBtn.style.display = 'none'; // Скрыта до ответа
+    showExplanationBtn.style.width = '100%';
+    showExplanationBtn.style.marginTop = '15px';
+    showExplanationBtn.style.padding = '12px';
+    showExplanationBtn.style.background = 'transparent';
+    showExplanationBtn.style.color = '#2196F3';
+    showExplanationBtn.style.border = '2px solid #2196F3';
+    showExplanationBtn.style.borderRadius = '10px';
+    showExplanationBtn.style.fontSize = '16px';
+    showExplanationBtn.style.cursor = 'pointer';
+    showExplanationBtn.style.transition = 'all 0.2s ease';
+    showExplanationBtn.dataset.hasExplanation = hasExplanation ? 'true' : 'false';
+    
+    showExplanationBtn.onclick = () => toggleExplanation();
+    container.appendChild(showExplanationBtn);
+
+    // Е. Блок пояснения (скрыт по умолчанию)
     const explanationDiv = document.createElement('div');
     explanationDiv.id = 'explanationBlock';
     explanationDiv.style.display = 'none';
-    explanationDiv.style.marginTop = '20px';
+    explanationDiv.style.marginTop = '15px';
     explanationDiv.style.padding = '15px';
     explanationDiv.style.background = '#e3f2fd';
     explanationDiv.style.borderRadius = '8px';
     explanationDiv.style.borderLeft = '5px solid #2196F3';
-    explanationDiv.innerHTML = `<strong>💡 Пояснение:</strong><br>${q.explanation}`;
+    explanationDiv.style.transition = 'all 0.3s ease';
+    
+    if (hasExplanation) {
+        explanationDiv.innerHTML = `<strong>💡 Пояснение:</strong><br>${q.explanation}`;
+    } else {
+        explanationDiv.innerHTML = `<strong>💡 Пояснение:</strong><br><em style="color:#999;">Пояснение для этого вопроса пока не добавлено.</em>`;
+    }
     container.appendChild(explanationDiv);
 
-    // Е. Кнопка "Далее"
+    // Ж. Кнопка "Далее"
     const nextBtn = document.createElement('button');
     nextBtn.id = 'nextQuestionBtn';
     nextBtn.innerText = 'Далее →';
@@ -134,7 +164,7 @@ function renderTestQuestion() {
     
     nextBtn.style.display = 'none';
     nextBtn.style.width = '100%';
-    nextBtn.style.marginTop = '20px';
+    nextBtn.style.marginTop = '15px';
     nextBtn.style.padding = '15px';
     nextBtn.style.background = '#1a3a52';
     nextBtn.style.color = 'white';
@@ -145,6 +175,28 @@ function renderTestQuestion() {
     nextBtn.style.cursor = 'pointer';
     
     container.appendChild(nextBtn);
+}
+
+// Функция переключения видимости пояснения
+function toggleExplanation() {
+    const explanationBlock = document.getElementById('explanationBlock');
+    const showBtn = document.getElementById('showExplanationBtn');
+    
+    if (!explanationBlock || !showBtn) return;
+    
+    if (explanationBlock.style.display === 'none') {
+        // Показываем пояснение
+        explanationBlock.style.display = 'block';
+        explanationBlock.style.opacity = '0';
+        setTimeout(() => explanationBlock.style.opacity = '1', 50);
+        showBtn.innerHTML = '💡 Скрыть пояснение';
+        showBtn.style.background = '#e3f2fd';
+    } else {
+        // Скрываем пояснение
+        explanationBlock.style.display = 'none';
+        showBtn.innerHTML = '💡 Показать пояснение';
+        showBtn.style.background = 'transparent';
+    }
 }
 
 function checkTestAnswer(selectedIndex, question, container) {
@@ -175,13 +227,13 @@ function checkTestAnswer(selectedIndex, question, container) {
         isCorrect: isCorrect
     });
 
-    const explanation = document.getElementById('explanationBlock');
-    if (explanation) {
-        explanation.style.display = 'block';
-        explanation.style.opacity = '0';
-        setTimeout(() => explanation.style.opacity = '1', 50);
+    // Показываем кнопку "Показать пояснение" (только если есть пояснение)
+    const showExplanationBtn = document.getElementById('showExplanationBtn');
+    if (showExplanationBtn && showExplanationBtn.dataset.hasExplanation === 'true') {
+        showExplanationBtn.style.display = 'block';
     }
 
+    // Показываем кнопку "Далее"
     const nextBtn = document.getElementById('nextQuestionBtn');
     if (nextBtn) {
         nextBtn.style.display = 'block';
