@@ -1,22 +1,23 @@
 // ============================================
-// ЉЋЌ”€ѓ“ђЂ–€џ Џђ€‹Ћ†…Ќ€џ
+// Е ЕЅВЌвЂќЛ†Ж’вЂњВђв‚¬вЂ“Л†Её ВЏВђЛ†вЂ№ЕЅвЂ вЂ¦ВЌЛ†Её
 // ============================================
 
 const CONFIG = {
-    // URL API Google Sheets (замените на ваш после публикации скрипта)
-    API_URL: 'https://script.google.com/macros/s/AKfycbxHZ_C_RpyxFnLxqJYyiMnzgPhrmdz3GXSRv1VRUodhYEfaEMWVU1Fmi_r4AvzCjLn2/exec',
+    // URL API Google Sheets (Г§Г Г¬ГҐГ­ГЁГІГҐ Г­Г  ГўГ Гё ГЇГ®Г±Г«ГҐ ГЇГіГЎГ«ГЁГЄГ Г¶ГЁГЁ Г±ГЄГ°ГЁГЇГІГ )
+    API_URL: 'https://script.google.com/macros/s/AKfycbzRGWiefBNeBxZFVJsxYEz6SpVCmgbpTKNIX7reK0wVqNeWc_2AaTghiBLZjxSyi7uF/exec',
     
-    // €нтервал автообновлениЯ (мс)
-    SYNC_INTERVAL: 300000, // 5 минут
+    // Л†Г­ГІГҐГ°ГўГ Г« Г ГўГІГ®Г®ГЎГ­Г®ГўГ«ГҐГ­ГЁГџ (Г¬Г±)
+    SYNC_INTERVAL: 300000, // 5 Г¬ГЁГ­ГіГІ
     
-    // ‹окальное кэширование
+    // вЂ№Г®ГЄГ Г«ГјГ­Г®ГҐ ГЄГЅГёГЁГ°Г®ГўГ Г­ГЁГҐ
     CACHE_KEY: 'pharmacology_data',
-    CACHE_EXPIRY: 3600000, // 1 час
+    CACHE_EXPIRY: 3600000, // 1 Г·Г Г±
     
-    // Ќастройки игры
+    // ВЌГ Г±ГІГ°Г®Г©ГЄГЁ ГЁГЈГ°Г»
     INITIAL_PATIENT_HEALTH: 100,
     CRITICAL_HEALTH: 30,
     
-    // ‚ерсиЯ приложениЯ
+    // вЂљГҐГ°Г±ГЁГџ ГЇГ°ГЁГ«Г®Г¦ГҐГ­ГЁГџ
     VERSION: '2.0.0'
+
 };
