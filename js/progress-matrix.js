@@ -69,10 +69,32 @@ const ProgressMatrix = (function() {
     };
 
     /**
-     * Получение данных прогресса из localStorage или CadetProgress
+     * Получение данных прогресса из localStorage
      */
     function getProgressData() {
-        // Пробуем получить из CadetProgress
+        // 1. Пробуем получить из localStorage.progressMatrix (новый формат)
+        const matrixStr = localStorage.getItem('progressMatrix');
+        if (matrixStr) {
+            try {
+                const matrix = JSON.parse(matrixStr);
+                // Дополняем данные для всех компетенций
+                Object.keys(COMPETENCIES_CONFIG).forEach(id => {
+                    if (!matrix[id]) {
+                        matrix[id] = {
+                            diagnostic: null,
+                            sections: { 1: null, 2: null, 3: null, 4: null },
+                            final: null
+                        };
+                    }
+                });
+                console.log('📊 Загружены данные матрицы:', matrix);
+                return matrix;
+            } catch (e) {
+                console.error('Ошибка парсинга progressMatrix:', e);
+            }
+        }
+        
+        // 2. Пробуем получить из CadetProgress
         if (typeof CadetProgress !== 'undefined') {
             const profile = CadetProgress.getProfile();
             if (profile && profile.progressMatrix) {
@@ -80,7 +102,7 @@ const ProgressMatrix = (function() {
             }
         }
         
-        // Fallback: пустые данные
+        // 3. Fallback: пустые данные
         const emptyData = {};
         Object.keys(COMPETENCIES_CONFIG).forEach(id => {
             emptyData[id] = {
