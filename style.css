@@ -86,12 +86,6 @@ body {
 }
 
 /* MENU GRID */
-.menu-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
-}
 
 .menu-icon {
     font-size: 48px;
@@ -1225,11 +1219,7 @@ body {
         padding: 8px 12px;
         font-size: 14px;
     }
-    
-    .menu-grid {
-        grid-template-columns: 1fr;
-    }
-    
+         
     .progress-grid {
         grid-template-columns: 1fr;
     }
@@ -1515,14 +1505,6 @@ body {
    МЕНЮ КАРТОЧКИ
    ============================================ */
 
-.menu-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    padding: 16px;
-}
-
-
 .menu-icon {
     font-size: 36px;
     margin-bottom: 10px;
@@ -1540,11 +1522,7 @@ body {
 }
 
 @media (max-width: 480px) {
-    .menu-grid {
-        gap: 10px;
-        padding: 12px;
-    }
-    
+       
     .menu-icon {
         font-size: 30px;
         margin-bottom: 8px;
@@ -1553,11 +1531,6 @@ body {
 }
 
 @media (max-width: 360px) {
-    .menu-grid {
-        gap: 8px;
-        padding: 10px;
-    }
-        
+           
 }
 }
-
