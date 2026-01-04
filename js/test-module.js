@@ -227,18 +227,52 @@ function renderTestQuestion() {
 }
 
 // ============================================
-// ИНФОРМАЦИЯ О КОМПЕТЕНЦИИ
+// ИНФОРМАЦИЯ О КОМПЕТЕНЦИИ (Расширенная v3.0)
 // ============================================
 
 function getCompetencyInfo(competencyId) {
     const competencies = {
-        HEMOSTASIS: { name: 'Гемостаз', icon: '🩸', color: '#dc3545' },
-        AIRWAY: { name: 'Дых. пути', icon: '🫁', color: '#17a2b8' },
+        // ШОКИ
+        HEMORRHAGIC_SHOCK: { name: 'Гемор.шок', icon: '🩸', color: '#dc3545' },
+        ANAPHYLACTIC_SHOCK: { name: 'Анафилакс.', icon: '⚡', color: '#ff6b6b' },
+        CARDIOGENIC_SHOCK: { name: 'Кардиоген.', icon: '💔', color: '#e74c3c' },
+        OBSTRUCTIVE_SHOCK: { name: 'Обструкт.', icon: '🫁', color: '#c0392b' },
+        SEPTIC_SHOCK: { name: 'Сепсис', icon: '🦠', color: '#9b59b6' },
+        
+        // ФАРМАКОЛОГИЯ
+        ANTIBIOTICS: { name: 'Антибиотики', icon: '💊', color: '#3498db' },
+        ANTIHISTAMINES: { name: 'Антигист.', icon: '🛡️', color: '#9b59b6' },
+        NSAID: { name: 'НПВС', icon: '💉', color: '#e67e22' },
+        GLUCOCORTICOIDS: { name: 'ГКС', icon: '💎', color: '#1abc9c' },
+        ANTIDOTES: { name: 'Антидоты', icon: '🧪', color: '#2ecc71' },
         ANALGESIA: { name: 'Анальгезия', icon: '💊', color: '#6f42c1' },
-        SHOCK: { name: 'Шок', icon: '⚡', color: '#fd7e14' },
+        INFUSION_THERAPY: { name: 'Инфузия', icon: '💧', color: '#00bcd4' },
+        ADRENALINE: { name: 'Адреналин', icon: '⚡', color: '#ff5722' },
+        SPASMOLYTICS: { name: 'Спазмолит.', icon: '🔄', color: '#795548' },
+        
+        // ИНФЕКЦИИ
+        VIRAL_INFECTIONS: { name: 'ОРВИ', icon: '🤧', color: '#ff9800' },
+        EYE_EAR_INFECTIONS: { name: 'Глаза/Уши', icon: '👁️', color: '#00bcd4' },
+        TICK_INFECTIONS: { name: 'Клещи', icon: '🕷️', color: '#4caf50' },
+        RABIES: { name: 'Бешенство', icon: '🐕', color: '#f44336' },
+        
+        // ТРАВМА
+        HEMOSTASIS: { name: 'Гемостаз', icon: '🩸', color: '#dc3545' },
         WOUND_CARE: { name: 'Раны', icon: '🩹', color: '#20c997' },
-        ANTIBIOTICS: { name: 'Антибиотики', icon: '💉', color: '#e83e8c' },
+        BURNS: { name: 'Ожоги', icon: '🔥', color: '#ff5722' },
+        GUNSHOT_WOUNDS: { name: 'Огнестрел.', icon: '🔫', color: '#607d8b' },
+        
+        // НЕОТЛОЖНЫЕ
+        CARDIAC_STROKE: { name: 'ИМ/Инсульт', icon: '❤️‍🩹', color: '#e91e63' },
+        DETOX: { name: 'Детокс', icon: '🧹', color: '#8bc34a' },
         EVACUATION: { name: 'Эвакуация', icon: '🚑', color: '#6c757d' },
+        
+        // ОСНОВЫ
+        PHARMACOLOGY_BASICS: { name: 'Основы', icon: '📚', color: '#607d8b' },
+        
+        // Обратная совместимость со старыми ID
+        SHOCK: { name: 'Шок', icon: '⚡', color: '#fd7e14' },
+        AIRWAY: { name: 'Дых. пути', icon: '🫁', color: '#17a2b8' },
         HYPOTHERMIA: { name: 'Гипотермия', icon: '🌡️', color: '#007bff' }
     };
     
@@ -461,8 +495,25 @@ function saveToProgressMatrix(competencyScores, testType) {
     // Получаем текущую матрицу или создаём новую
     let matrix = JSON.parse(localStorage.getItem('progressMatrix') || '{}');
     
-    // Инициализация структуры для каждой компетенции
-    const competencyIds = ['HEMOSTASIS', 'AIRWAY', 'ANALGESIA', 'SHOCK', 'WOUND_CARE', 'ANTIBIOTICS', 'EVACUATION', 'HYPOTHERMIA'];
+    // Расширенный список компетенций v3.0
+    const competencyIds = [
+        // Шоки
+        'HEMORRHAGIC_SHOCK', 'ANAPHYLACTIC_SHOCK', 'CARDIOGENIC_SHOCK', 
+        'OBSTRUCTIVE_SHOCK', 'SEPTIC_SHOCK',
+        // Фармакология
+        'ANTIBIOTICS', 'ANTIHISTAMINES', 'NSAID', 'GLUCOCORTICOIDS', 
+        'ANTIDOTES', 'ANALGESIA', 'INFUSION_THERAPY', 'ADRENALINE', 'SPASMOLYTICS',
+        // Инфекции
+        'VIRAL_INFECTIONS', 'EYE_EAR_INFECTIONS', 'TICK_INFECTIONS', 'RABIES',
+        // Травма
+        'HEMOSTASIS', 'WOUND_CARE', 'BURNS', 'GUNSHOT_WOUNDS',
+        // Неотложные
+        'CARDIAC_STROKE', 'DETOX', 'EVACUATION',
+        // Основы
+        'PHARMACOLOGY_BASICS',
+        // Обратная совместимость
+        'SHOCK', 'AIRWAY', 'HYPOTHERMIA'
+    ];
     
     competencyIds.forEach(id => {
         if (!matrix[id]) {
