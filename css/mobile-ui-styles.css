@@ -1,12 +1,15 @@
 /* ============================================
-   ГЛАВНАЯ СТРАНИЦА - СТИЛИ МЕНЮ
-   Вертикальное расположение карточек
+   АДАПТИВНЫЕ СТИЛИ ГЛАВНОЙ СТРАНИЦЫ
+   Горизонтально на ПК, вертикально на смартфоне
    ============================================ */
 
-/* === КОНТЕЙНЕР МЕНЮ (вертикальный) === */
+/* ============================================
+   DESKTOP (по умолчанию) - ГОРИЗОНТАЛЬНАЯ СЕТКА
+   ============================================ */
+
 .menu-grid {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 16px;
     padding: 20px 16px;
 }
@@ -86,6 +89,25 @@
     background: #dce5ed;
 }
 
+/* Свечение при наведении */
+.menu-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 100%);
+    pointer-events: none;
+}
+
+.menu-card:hover::after {
+    opacity: 1;
+}
+
 /* ============================================
    БЛОК ОБНОВЛЕНИЯ (внизу)
    ============================================ */
@@ -128,6 +150,7 @@
     justify-content: center;
     gap: 8px;
     width: 100%;
+    max-width: 300px;
     box-shadow: 0 2px 8px rgba(100, 116, 139, 0.3);
 }
 
@@ -184,7 +207,7 @@
 .user-info #userName {
     color: #e2e8f0;
     font-weight: 500;
-    max-width: 80px;
+    max-width: 100px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -234,12 +257,39 @@
 }
 
 /* ============================================
-   АДАПТИВНОСТЬ
+   ПЛАНШЕТ (768px - 1024px)
    ============================================ */
 
-@media (max-width: 480px) {
+@media (max-width: 1024px) {
     .menu-grid {
+        grid-template-columns: repeat(2, 1fr);
         gap: 14px;
+        padding: 16px 14px;
+    }
+    
+    .menu-card {
+        padding: 24px 16px;
+    }
+    
+    .menu-icon {
+        font-size: 46px;
+    }
+    
+    .menu-card h3 {
+        font-size: 16px;
+    }
+}
+
+/* ============================================
+   СМАРТФОН (до 768px) - ВЕРТИКАЛЬНОЕ РАСПОЛОЖЕНИЕ
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* Переключаем на вертикальную компоновку */
+    .menu-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
         padding: 16px 12px;
     }
     
@@ -249,12 +299,12 @@
     }
     
     .menu-icon {
-        font-size: 46px;
+        font-size: 48px;
         margin-bottom: 12px;
     }
     
     .menu-card h3 {
-        font-size: 16px;
+        font-size: 17px;
     }
     
     .menu-card p {
@@ -274,20 +324,76 @@
         font-size: 11px;
     }
     
+    .user-info #userName {
+        max-width: 80px;
+    }
+    
     .update-info {
         margin: 0 12px 16px;
         padding: 12px 14px;
     }
+    
+    .update-info .btn-small,
+    .update-info button {
+        max-width: none;
+    }
 }
+
+/* ============================================
+   МАЛЕНЬКИЙ СМАРТФОН (до 480px)
+   ============================================ */
+
+@media (max-width: 480px) {
+    .menu-grid {
+        gap: 14px;
+        padding: 14px 10px;
+    }
+    
+    .menu-card {
+        padding: 22px 14px;
+        border-radius: 16px;
+    }
+    
+    .menu-icon {
+        font-size: 44px;
+        margin-bottom: 10px;
+    }
+    
+    .menu-card h3 {
+        font-size: 16px;
+    }
+    
+    .menu-card p {
+        font-size: 12px;
+    }
+    
+    .badge {
+        font-size: 10px;
+        padding: 4px 10px;
+    }
+    
+    .navigation {
+        top: 44px;
+    }
+    
+    .nav-btn {
+        font-size: 20px;
+        padding: 8px 6px;
+    }
+}
+
+/* ============================================
+   ОЧЕНЬ МАЛЕНЬКИЙ СМАРТФОН (до 360px)
+   ============================================ */
 
 @media (max-width: 360px) {
     .menu-grid {
         gap: 12px;
-        padding: 12px 10px;
+        padding: 12px 8px;
     }
     
     .menu-card {
-        padding: 20px 14px;
+        padding: 20px 12px;
     }
     
     .menu-icon {
@@ -298,30 +404,12 @@
         font-size: 15px;
     }
     
+    .header h1 {
+        font-size: 13px;
+    }
+    
+    /* Скрываем имя на очень узких экранах */
     .user-info #userName {
         display: none;
     }
-}
-
-/* ============================================
-   ДОПОЛНИТЕЛЬНЫЕ ЭФФЕКТЫ
-   ============================================ */
-
-/* Свечение при наведении */
-.menu-card::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 20px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 100%);
-    pointer-events: none;
-}
-
-.menu-card:hover::after {
-    opacity: 1;
 }
