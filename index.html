@@ -316,53 +316,42 @@
             </div>
         </section>
 
-        <!-- МОДУЛЬ ПРОГРЕССА -->
-        <section id="progress" class="section">
-            <h2>📊 Ваш прогресс</h2>
-            
-            <div class="progress-grid">
-                <div class="progress-card">
-                    <h3>📅 Дней в строю</h3>
-                    <div class="stat-value" id="studyDays">1</div>
-                    <p>непрерывного обучения</p>
-                </div>
+       <!-- МОДУЛЬ ПРОГРЕССА -->
+<section id="progress" class="section">
+    <h2>📊 Ваш прогресс</h2>
+    
+    <!-- МАТРИЦА КОМПЕТЕНЦИЙ -->
+    <div id="competency-matrix-container"></div>
+    
+    <div class="progress-grid">
+        <div class="progress-card">
+            <h3>📅 Дней в строю</h3>
+            <div class="stat-value" id="studyDays">1</div>
+            <p>непрерывного обучения</p>
+        </div>
 
-                <div class="progress-card">
-                    <h3>📈 Общий уровень</h3>
-                    <div style="font-size: 24px; font-weight: bold; margin: 10px 0;">--%</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="overallProgress" style="width: 0%"></div>
-                    </div>
-                </div>
-
-                <div class="progress-card">
-                    <h3>📝 Статистика тестов</h3>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span>Пройдено:</span>
-                        <strong id="testsComplete">0/20</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span>Средний балл:</span>
-                        <strong id="avgScore">0%</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>Лучший балл:</span>
-                        <strong id="bestScore">0%</strong>
-                    </div>
-                </div>
-                
-                <div class="progress-card">
-                    <h3>💊 По категориям</h3>
-                    <div id="categoryProgress">
-                        </div>
-                </div>
-                
-                <div class="progress-card achievements" style="grid-column: 1 / -1;">
-                    <h3>🏆 Достижения</h3>
-                    <div id="achievements"></div>
-                </div>
+        <div class="progress-card">
+            <h3>📝 Статистика тестов</h3>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                <span>Пройдено:</span>
+                <strong id="testsComplete">0</strong>
             </div>
-        </section>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                <span>Средний балл:</span>
+                <strong id="avgScore">0%</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span>Лучший балл:</span>
+                <strong id="bestScore">0%</strong>
+            </div>
+        </div>
+        
+        <div class="progress-card achievements" style="grid-column: 1 / -1;">
+            <h3>🏆 Достижения</h3>
+            <div id="achievements"></div>
+        </div>
+    </div>
+</section>
 
         <!-- МОДАЛЬНОЕ ОКНО ДЛЯ ИЗОБРАЖЕНИЙ -->
         <div id="imageModal" class="modal">
@@ -384,5 +373,6 @@
 
 
 </html>
+
 
 
