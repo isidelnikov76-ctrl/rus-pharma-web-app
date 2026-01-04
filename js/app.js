@@ -92,6 +92,23 @@ function renderProgressSection() {
  * Проверка наличия реальных данных прогресса
  */
 function checkForRealProgressData() {
+    // Проверяем progressMatrix в localStorage (новый формат)
+    const matrixStr = localStorage.getItem('progressMatrix');
+    if (matrixStr) {
+        try {
+            const matrix = JSON.parse(matrixStr);
+            const hasData = Object.values(matrix).some(
+                data => data && (data.diagnostic !== null || data.final !== null)
+            );
+            if (hasData) {
+                console.log('✅ Найдены реальные данные в progressMatrix');
+                return true;
+            }
+        } catch (e) {
+            console.error('Ошибка чтения progressMatrix:', e);
+        }
+    }
+    
     // Проверяем CadetProgress
     if (typeof CadetProgress !== 'undefined') {
         const profile = CadetProgress.getProfile();
@@ -103,13 +120,7 @@ function checkForRealProgressData() {
         }
     }
     
-    // Проверяем localStorage напрямую
-    const testResults = localStorage.getItem('testResults');
-    if (testResults) {
-        const results = JSON.parse(testResults);
-        if (results && results.length > 0) return true;
-    }
-    
+    console.log('ℹ️ Реальных данных нет, используем демо');
     return false;
 }
 
