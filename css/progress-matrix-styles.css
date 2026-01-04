@@ -1,7 +1,61 @@
 /* ============================================
    МАТРИЦА ПРОГРЕССА КОМПЕТЕНЦИЙ
-   Адаптивные стили для смартфона v2.0
+   Адаптивные стили для смартфона v3.0
    ============================================ */
+
+/* === ТАБЫ БЛОКОВ === */
+.block-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 8px 12px;
+    background: #243242;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.block-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.block-tab {
+    flex-shrink: 0;
+    padding: 8px 12px;
+    background: transparent;
+    border: 1px solid #3a4a5a;
+    border-radius: 8px;
+    color: #94a3b8;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.block-tab:hover {
+    background: #2d3d4d;
+    border-color: #4a5a6a;
+}
+
+.block-tab.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+/* === НЕТ ДАННЫХ === */
+.matrix-no-data {
+    padding: 30px 16px;
+    text-align: center;
+    color: #94a3b8;
+}
+
+.matrix-no-data p {
+    margin: 8px 0;
+}
+
+.matrix-no-data p:first-child {
+    font-size: 18px;
+}
 
 /* === КОНТЕЙНЕР МАТРИЦЫ === */
 .competency-matrix-card {
