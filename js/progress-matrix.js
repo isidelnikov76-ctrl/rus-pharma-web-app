@@ -146,7 +146,7 @@ const ProgressMatrix = (function() {
      */
     function formatScore(value) {
         if (value === null || value === undefined) {
-            return '<span class="score-cell">—</span>';
+            return '<span class="score-cell not-passed" title="Ещё не пройден">⏳</span>';
         }
         return `<span class="score-cell has-value">${Math.round(value)}%</span>`;
     }
@@ -170,23 +170,26 @@ const ProgressMatrix = (function() {
         const competencies = Object.keys(COMPETENCIES_CONFIG);
         
         return `
-            <table class="progress-matrix-table">
-                <thead>
-                    <tr>
-                        <th>Компетенция</th>
-                        <th>Вводный</th>
-                        <th>Раздел 1</th>
-                        <th>Раздел 2</th>
-                        <th>Раздел 3</th>
-                        <th>Раздел 4</th>
-                        <th>Финал</th>
-                        <th>Δ Прогресс</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${competencies.map(id => renderRow(id, progressData[id])).join('')}
-                </tbody>
-            </table>
+            <div class="scroll-hint">Прокрутите для просмотра всех колонок</div>
+            <div class="matrix-table-container">
+                <table class="progress-matrix-table">
+                    <thead>
+                        <tr>
+                            <th>Компетенция</th>
+                            <th>Вводный</th>
+                            <th>Разд. 1</th>
+                            <th>Разд. 2</th>
+                            <th>Разд. 3</th>
+                            <th>Разд. 4</th>
+                            <th>Финал</th>
+                            <th>Δ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${competencies.map(id => renderRow(id, progressData[id])).join('')}
+                    </tbody>
+                </table>
+            </div>
         `;
     }
 
@@ -221,8 +224,8 @@ const ProgressMatrix = (function() {
                 <td>${formatScore(sections[4])}</td>
                 <td>${formatScore(progressData.final)}</td>
                 <td>
-                    <div class="delta-cell ${deltaInfo.class}">
-                        <span>${progressData.diagnostic !== null && progressData.final !== null ? deltaInfo.text : '—'}</span>
+                    <div class="delta-cell ${progressData.diagnostic !== null && progressData.final !== null ? deltaInfo.class : 'not-available'}">
+                        <span>${progressData.diagnostic !== null && progressData.final !== null ? deltaInfo.text : '⏳'}</span>
                         <span class="delta-indicator">${progressData.diagnostic !== null && progressData.final !== null ? deltaInfo.icon : ''}</span>
                     </div>
                 </td>
@@ -237,16 +240,20 @@ const ProgressMatrix = (function() {
         return `
             <div class="matrix-footer">
                 <div class="legend-item">
+                    <span class="legend-icon">⏳</span>
+                    <span>Ещё не пройден</span>
+                </div>
+                <div class="legend-item">
                     <span class="legend-dot green"></span>
-                    <span>Δ ≥ 15% — Отличный прогресс</span>
+                    <span>Δ ≥ 15%</span>
                 </div>
                 <div class="legend-item">
                     <span class="legend-dot yellow"></span>
-                    <span>Δ 5-14% — Есть прогресс</span>
+                    <span>Δ 5-14%</span>
                 </div>
                 <div class="legend-item">
                     <span class="legend-dot red"></span>
-                    <span>Δ < 5% — Требует внимания</span>
+                    <span>Δ < 5%</span>
                 </div>
             </div>
         `;
@@ -360,23 +367,26 @@ const ProgressMatrix = (function() {
         container.innerHTML = `
             <div class="competency-matrix-card">
                 ${renderHeader()}
-                <table class="progress-matrix-table">
-                    <thead>
-                        <tr>
-                            <th>Компетенция</th>
-                            <th>Вводный</th>
-                            <th>Раздел 1</th>
-                            <th>Раздел 2</th>
-                            <th>Раздел 3</th>
-                            <th>Раздел 4</th>
-                            <th>Финал</th>
-                            <th>Δ Прогресс</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${Object.keys(demoData).map(id => renderRow(id, demoData[id])).join('')}
-                    </tbody>
-                </table>
+                <div class="scroll-hint">Прокрутите для просмотра всех колонок</div>
+                <div class="matrix-table-container">
+                    <table class="progress-matrix-table">
+                        <thead>
+                            <tr>
+                                <th>Компетенция</th>
+                                <th>Вводный</th>
+                                <th>Разд. 1</th>
+                                <th>Разд. 2</th>
+                                <th>Разд. 3</th>
+                                <th>Разд. 4</th>
+                                <th>Финал</th>
+                                <th>Δ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${Object.keys(demoData).map(id => renderRow(id, demoData[id])).join('')}
+                        </tbody>
+                    </table>
+                </div>
                 ${renderFooter()}
             </div>
         `;
