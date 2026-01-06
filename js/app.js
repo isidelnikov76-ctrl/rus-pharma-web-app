@@ -294,28 +294,39 @@ function zoomImage() {
  * Превращает любую ссылку Google Drive в прямую ссылку для картинки
  * Использует домен lh3.googleusercontent.com для обхода защиты от хотлинкинга
  */
+/**
+ * Превращает ссылку Google Drive в "прямую" (CORS-friendly)
+ */
 function convertGoogleDriveUrl(url) {
-    // 1. Защита от пустых значений
-    if (!url || typeof url !== 'string') return '';
+    // ЛОГ 1: Что пришло на вход
+    // console.log("🔍 [Converter] Вход:", url); 
 
-    // 2. Если это заглушка - возвращаем как есть
+    if (!url || typeof url !== 'string') return '';
     if (url.includes('placehold.co')) return url;
 
-    // 3. Если это уже "волшебная" ссылка lh3 - возвращаем
-    if (url.includes('lh3.googleusercontent.com')) return url;
+    // Если ссылка уже "правильная" (lh3 или googleusercontent)
+    if (url.includes('googleusercontent.com')) return url;
 
-    // 4. Ищем ID файла
+    // Ищем ID
     const idMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || 
                     url.match(/id=([a-zA-Z0-9_-]+)/) ||
-                    url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
-                    url.match(/id=([a-zA-Z0-9_-]+)/); // Повтор для надежности
+                    url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
 
     if (idMatch && idMatch[1]) {
-        // !!! ВОТ ГЛАВНОЕ ИЗМЕНЕНИЕ !!!
-        // Вместо drive.google.com используем lh3.googleusercontent.com/d/
-        return `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
+        const fileId = idMatch[1];
+        
+        // ВАРИАНТ "ЧЕРНЫЙ ХОД" (Bypass CORS)
+        // Используем lh3.googleusercontent.com/d/ID
+        // Это тот же механизм, что и profile/picture, но современнее
+        const hackUrl = `https://lh3.googleusercontent.com/d/${fileId}`;
+        
+        // ЛОГ 2: Успешная конвертация
+        // console.log(`✅ [Converter] ID: ${fileId} -> URL: ${hackUrl}`);
+        
+        return hackUrl;
     }
 
+    console.warn("⚠️ [Converter] Не удалось найти ID в ссылке:", url);
     return url;
 }
 
