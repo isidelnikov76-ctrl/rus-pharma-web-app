@@ -289,23 +289,26 @@ function zoomImage() {
 /**
  * Превращает ссылку Google Drive в прямую ссылку для картинки
  */
-function convertGoogleDriveUrl(url) {
-    // 1. Защита от пустых значений
+unction convertGoogleDriveUrl(url) {
+    // 1. ‡àùèòà îò ïóñòûõ çíà÷åíèé
     if (!url || typeof url !== 'string') return '';
 
-    // 2. Если это заглушка - возвращаем как есть
+    // 2. …ñëè ýòî çàãëóøêà - âîçâðàùàåì êàê åñòü
     if (url.includes('placehold.co')) return url;
 
-    // 3. Если ссылка уже прямая (lh3 или googleusercontent) - не трогаем
-    if (url.includes('googleusercontent.com')) return url;
+    // 3. …ñëè ýòî óæå "âîëøåáíàß" ññûëêà lh3 - âîçâðàùàåì
+    if (url.includes('lh3.googleusercontent.com')) return url;
 
-    // 4. Ищем ID файла (поддерживает разные форматы ссылок)
+    // 4. ˆùåì ID ôàéëà
     const idMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || 
-                    url.match(/id=([a-zA-Z0-9_-]+)/);
+                    url.match(/id=([a-zA-Z0-9_-]+)/) ||
+                    url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
+                    url.match(/id=([a-zA-Z0-9_-]+)/); // îâòîð äëß íàäåæíîñòè
 
     if (idMatch && idMatch[1]) {
-        // ИСПОЛЬЗУЕМ САМЫЙ НАДЕЖНЫЙ ФОРМАТ
-        return `https://drive.google.com/uc?export=view&id=${idMatch[1]}`;
+        // !!! ‚Ž’ ƒ‹€‚Ž… ˆ‡Œ……ˆ… !!!
+        // ‚ìåñòî drive.google.com èñïîëüçóåì lh3.googleusercontent.com/d/
+        return `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
     }
 
     return url;
