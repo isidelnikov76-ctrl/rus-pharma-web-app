@@ -1,5 +1,5 @@
 // ============================================
-// МОДУЛЬ ФЛЭШ-КАРТ (FINAL FIXED VERSION)
+// МОДУЛЬ ФЛЭШ-КАРТ (FULL DEBUG VERSION)
 // ============================================
 
 let currentCards = [];
@@ -10,6 +10,7 @@ let cardStats = { know: 0, repeat: 0 };
 
 // Инициализация модуля
 function initCardsModule() {
+    console.log("💊 [Cards] Инициализация модуля...");
     loadCardStats();
     populateCategories();
     
@@ -41,23 +42,21 @@ function quitCardsModule() {
     showSection('menu');
 }
 
-// Программное добавление кнопки "В меню" (Агрессивный метод)
+// Программное добавление кнопки "В меню"
 function injectExitButton() {
-    // 1. Ищем контейнер одиночного просмотра
     const container = document.getElementById('singleCardView');
     if (!container) return;
 
-    // 2. Если кнопка уже есть — удаляем её, чтобы пересоздать внизу
+    // Удаляем старую кнопку, если есть
     const existingBtn = document.getElementById('btnExitCards');
     if (existingBtn) existingBtn.remove();
 
-    // 3. Создаем кнопку заново
+    // Создаем новую
     const exitBtn = document.createElement('button');
     exitBtn.id = 'btnExitCards';
     exitBtn.innerHTML = '🏠 В меню';
     exitBtn.onclick = quitCardsModule;
     
-    // 4. Стили кнопки
     Object.assign(exitBtn.style, {
         display: 'block',
         width: '100%',
@@ -74,14 +73,14 @@ function injectExitButton() {
         textAlign: 'center'
     });
     
-    // 5. Добавляем в самый конец контейнера
     container.appendChild(exitBtn);
 }
 
 function populateCategories() {
-    if (!appData.drugs) return;
+    // Используем window.appData (глобальный объект)
+    if (!window.appData || !window.appData.drugs) return;
 
-    const categories = [...new Set(appData.drugs.map(d => d.category))];
+    const categories = [...new Set(window.appData.drugs.map(d => d.category))];
     const select = document.getElementById('categoryFilter');
     
     if (!select) return;
@@ -99,16 +98,17 @@ function populateCategories() {
 }
 
 function loadCards(category = 'all') {
-    if (!appData.drugs || appData.drugs.length === 0) {
+    const data = window.appData;
+    if (!data || !data.drugs || data.drugs.length === 0) {
         const flashcardEl = document.getElementById('flashcard');
         if (flashcardEl) flashcardEl.innerHTML = '<div style="padding:20px; text-align:center;">Нет данных</div>';
         return;
     }
 
     if (category === 'all') {
-        currentCards = [...appData.drugs];
+        currentCards = [...data.drugs];
     } else {
-        currentCards = appData.drugs.filter(d => d.category === category);
+        currentCards = data.drugs.filter(d => d.category === category);
     }
     
     currentCardIndex = 0;
@@ -149,7 +149,6 @@ function updateCardsUI() {
         if (gridView) gridView.style.display = 'none';
         
         showCard(currentCardIndex);
-        // ВАЖНО: Добавляем кнопку ПОСЛЕ отрисовки карты
         setTimeout(injectExitButton, 50); 
     } else {
         if (singleView) singleView.style.display = 'none';
@@ -166,92 +165,98 @@ function updateCardsProgressBar() {
     progressFill.style.width = `${percent}%`;
 }
 
-// === ОТРИСОВКА ОДНОЙ КАРТЫ ===
-// ... внутри js/cards-module.js ...
-
+// === ОТРИСОВКА ОДНОЙ КАРТЫ С ЛОГАМИ ===
 function showCard(index) {
     if (index < 0 || index >= currentCards.length) return;
     
     const card = currentCards[index];
     
-    // === ЛОГИРОВАНИЕ ДЛЯ ОТЛАДКИ ===
-    console.group(`🃏 Рендер карты #${index}: ${card.title || card.name}`);
-    console.log("Сырой объект карты:", card);
-    console.log("Поля с картинками:", {
-        image: card.image,
-        imageUrl: card.imageUrl,
-        url: card.url,
-        photo_url: card['Фото_URL'] // Проверка на всякий случай
-    });
-    // ================================
-
+    // --- ЛОГИРОВАНИЕ ---
+    console.group(`🃏 Карта #${index + 1}: ${card.name || card.title}`);
+    console.log("Данные карты:", card);
+    
     const cardEl = document.getElementById('flashcard');
+    
     if (cardEl) cardEl.classList.remove('flipped');
-    isFlipped = false;
+    isCardFlipped = false;
     
-    document.getElementById('cardIndex').innerText = index + 1;
-    document.getElementById('cardCategory').innerText = card.category;
-    document.getElementById('drugName').innerText = card.title || card.name; // Поддержка обоих вариантов
+    document.getElementById('cardIndex').textContent = index + 1;
+    document.getElementById('cardCategory').textContent = card.category;
+    document.getElementById('drugName').textContent = card.name;
     
-    // ... текстовые поля (МНН, Дозировка и т.д. без изменений) ...
-
-    // --- БЛОК КАРТИНКИ С ЛОГАМИ ---
+    const innEl = document.getElementById('drugINN_front');
+    if (innEl) innEl.textContent = card.inn || card.subtitle || '';
+    
+    // --- КАРТИНКА ---
     let img = document.getElementById('drugImage');
     const placeholder = document.getElementById('imagePlaceholder');
     const imgContainer = img ? img.parentElement : null;
 
     if (imgContainer) {
-        // Пробуем достать ссылку из всех возможных полей
-        const rawUrl = card.image || card.imageUrl || card.url || card['Фото_URL'];
-
-        console.log("🔗 Найденная сырая ссылка:", rawUrl);
+        // Проверяем все возможные поля
+        const rawUrl = card.imageUrl || card.image || card.url || card['Фото_URL'];
+        console.log("🔗 Сырая ссылка:", rawUrl);
 
         const directUrl = (typeof convertGoogleDriveUrl === 'function') 
             ? convertGoogleDriveUrl(rawUrl) 
             : rawUrl;
-
-        console.log("🚀 Итоговая ссылка для src:", directUrl);
+            
+        console.log("🚀 Обработанная ссылка:", directUrl);
 
         if (directUrl && directUrl.length > 5) {
+            // Если картинки нет - создаем
             if (!img) {
                 img = document.createElement('img');
                 img.id = 'drugImage';
                 imgContainer.insertBefore(img, placeholder);
             }
 
-            img.style.display = 'block';
+            img.alt = card.name || card.title;
+            img.setAttribute('referrerpolicy', 'no-referrer'); // Хак для Google Drive
             img.src = directUrl;
-            img.setAttribute('referrerpolicy', 'no-referrer'); // На всякий случай оставляем
             
-            // Стили
-            img.style.maxWidth = '100%';
-            img.style.maxHeight = '220px';
-            img.style.objectFit = 'contain';
-            img.style.margin = '10px auto';
-
-            // Обработчики
+            Object.assign(img.style, {
+                display: 'block',
+                maxWidth: '100%',
+                maxHeight: '220px',
+                objectFit: 'contain',
+                borderRadius: '8px',
+                margin: '10px auto'
+            });
+            
+            // Зум
             img.onclick = (e) => {
                 e.stopPropagation();
                 if (typeof openImageModal === 'function') openImageModal(directUrl);
             };
 
-            img.onload = () => console.log("✅ Картинка успешно загрузилась (onload)");
-            img.onerror = () => {
-                console.error("❌ Ошибка загрузки картинки (onerror). URL:", directUrl);
-                img.style.display = 'none';
-                if (placeholder) placeholder.style.display = 'flex';
+            // Ошибка загрузки
+            img.onerror = function() {
+                console.error("❌ Не удалось загрузить картинку:", directUrl);
+                this.style.display = 'none';
+                if (placeholder) {
+                    placeholder.style.display = 'flex';
+                    placeholder.textContent = '❌'; 
+                }
+            };
+            
+            // Успех
+            img.onload = function() {
+                console.log("✅ Картинка отрисована успешно");
             };
 
             if (placeholder) placeholder.style.display = 'none';
+            
         } else {
-            console.warn("⚠️ Нет ссылки на картинку для этого препарата");
+            console.warn("⚠️ Ссылка на картинку пустая или слишком короткая");
             if (img) img.style.display = 'none';
-            if (placeholder) placeholder.style.display = 'flex';
+            if (placeholder) {
+                placeholder.style.display = 'flex';
+                placeholder.textContent = (typeof getCategoryIcon === 'function') ? getCategoryIcon(card.category) : '💊';
+            }
         }
     }
-    console.groupEnd(); // Конец лога карты
-}
-    // ======================================
+    console.groupEnd();
 
     // Обратная сторона
     document.getElementById('drugName_back').textContent = card.name;
@@ -262,208 +267,4 @@ function showCard(index) {
     document.getElementById('drugIndications').textContent = card.indications;
     document.getElementById('drugContra').textContent = card.contraindications;
     document.getElementById('drugSideEffects').textContent = card.sideEffects;
-    document.getElementById('drugField').textContent = card.fieldNotes;
-}
-
-// === КАТАЛОГ (GRID) ===
-function renderGrid() {
-    const grid = document.getElementById('cardsGrid');
-    if (!grid) return;
-    
-    const results = JSON.parse(localStorage.getItem('cardResults') || '[]');
-    const totalLearned = results.filter(r => r.status === 'know').length;
-    
-    grid.innerHTML = `
-        <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: space-around; text-align: center;">
-            <div>
-                <div style="font-size: 20px; font-weight: bold; color: #1a3a52;">${appData.drugs.length}</div>
-                <div style="font-size: 12px; color: #666;">Всего</div>
-            </div>
-            <div>
-                <div style="font-size: 20px; font-weight: bold; color: #28a745;">${totalLearned}</div>
-                <div style="font-size: 12px; color: #666;">Изучено</div>
-            </div>
-        </div>
-        <div id="gridItemsContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px;"></div>
-    `;
-    
-    const container = document.getElementById('gridItemsContainer');
-
-    currentCards.forEach((card, index) => {
-        const status = results.find(r => r.drugId === card.id || r.drug === card.name);
-        let statusIcon = '';
-        let borderColor = '#eee';
-        
-        if (status && status.status === 'know') {
-            statusIcon = '<span style="color:#28a745; position:absolute; top:5px; right:5px;">✅</span>';
-            borderColor = '#d4edda';
-        } else if (status && status.status === 'dontknow') {
-            statusIcon = '<span style="color:#dc3545; position:absolute; top:5px; right:5px;">↻</span>';
-            borderColor = '#f8d7da';
-        }
-
-        const item = document.createElement('div');
-        item.className = 'grid-card-item';
-        
-        Object.assign(item.style, {
-            border: `2px solid ${borderColor}`,
-            borderRadius: '10px',
-            padding: '15px 10px',
-            textAlign: 'center',
-            background: 'white',
-            position: 'relative',
-            cursor: 'pointer'
-        });
-        
-        item.innerHTML = `
-            ${statusIcon}
-            <div style="font-size: 30px; margin-bottom: 5px;">${getCategoryIcon(card.category)}</div>
-            <h4 style="margin: 5px 0; font-size: 14px; color: #333;">${card.name}</h4>
-        `;
-        
-        item.onclick = () => {
-            currentCardIndex = index;
-            setCardView('single');
-        };
-        
-        container.appendChild(item);
-    });
-
-    // Кнопка ВЫХОДА в каталоге
-    const exitBtn = document.createElement('button');
-    exitBtn.innerHTML = "🏠 В меню";
-    exitBtn.onclick = quitCardsModule;
-    
-    Object.assign(exitBtn.style, {
-        gridColumn: "1 / -1",
-        marginTop: "20px",
-        padding: "15px",
-        background: "white",
-        color: "#666",
-        border: "1px solid #ccc",
-        borderRadius: "10px",
-        cursor: "pointer",
-        fontWeight: "bold"
-    });
-    
-    container.appendChild(exitBtn);
-}
-
-function flipCard() {
-    const card = document.getElementById('flashcard');
-    if (card) {
-        card.classList.toggle('flipped');
-        isCardFlipped = !isCardFlipped;
-    }
-}
-
-function nextCard() {
-    if (currentCardIndex < currentCards.length - 1) {
-        currentCardIndex++;
-        showCard(currentCardIndex);
-        updateCardsProgressBar();
-    } else {
-        showNotification('🎉 Карты закончились!', 'success');
-    }
-}
-
-function prevCard() {
-    if (currentCardIndex > 0) {
-        currentCardIndex--;
-        showCard(currentCardIndex);
-        updateCardsProgressBar();
-    }
-}
-
-function markCard(status) {
-    const currentDrug = currentCards[currentCardIndex];
-    const results = JSON.parse(localStorage.getItem('cardResults') || '[]');
-    
-    const newResults = results.filter(r => r.drugId !== currentDrug.id && r.drug !== currentDrug.name);
-    
-    newResults.push({
-        drugId: currentDrug.id,
-        drug: currentDrug.name,
-        status: status,
-        timestamp: Date.now()
-    });
-    
-    localStorage.setItem('cardResults', JSON.stringify(newResults));
-    loadCardStats();
-    
-    showNotification(status === 'know' ? '✅ Изучено' : '↻ На повтор', status === 'know' ? 'success' : 'warning');
-    
-    setTimeout(() => {
-        nextCard();
-    }, 400);
-}
-
-// === КРАСИВЫЕ УВЕДОМЛЕНИЯ ===
-function showNotification(message, type = 'info') {
-    const old = document.querySelector('.custom-notification');
-    if (old) old.remove();
-
-    const notification = document.createElement('div');
-    notification.className = 'custom-notification';
-    notification.textContent = message;
-    
-    Object.assign(notification.style, {
-        position: 'fixed',
-        bottom: '80px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        padding: '12px 24px',
-        background: type === 'success' ? 'rgba(40, 167, 69, 0.95)' : 'rgba(255, 193, 7, 0.95)',
-        color: type === 'success' ? 'white' : 'black',
-        borderRadius: '25px',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-        zIndex: '1000',
-        fontWeight: 'bold',
-        fontSize: '16px',
-        opacity: '0',
-        transition: 'opacity 0.3s ease',
-        pointerEvents: 'none'
-    });
-
-    document.body.appendChild(notification);
-    
-    requestAnimationFrame(() => {
-        notification.style.opacity = '1';
-    });
-    
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        setTimeout(() => notification.remove(), 300);
-    }, 1500);
-}
-
-function getCategoryIcon(category) {
-    const icons = {
-        'Антибиотики': '💊', 'Анальгетики': '💉', 'Антидоты': '🧪',
-        'Экстренные': '⚡', 'Антигистаминные': '🌸', 'Инструменты': '✂️',
-        'Расходники': '🩹', 'default': '💊'
-    };
-    return icons[category] || icons['default'];
-}
-
-function loadCardStats() {
-    const results = JSON.parse(localStorage.getItem('cardResults') || '[]');
-    cardStats.know = results.filter(r => r.status === 'know').length;
-    cardStats.repeat = results.filter(r => r.status === 'dontknow').length;
-    
-    const knowEl = document.getElementById('knowCount');
-    const repeatEl = document.getElementById('repeatCount');
-
-    if (knowEl) knowEl.textContent = cardStats.know;
-    if (repeatEl) repeatEl.textContent = cardStats.repeat;
-}
-
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-}
-
-
-
+    document
