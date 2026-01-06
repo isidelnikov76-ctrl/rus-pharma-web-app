@@ -286,29 +286,33 @@ function zoomImage() {
 // УТИЛИТЫ ДЛЯ GOOGLE DRIVE
 // ============================================
 
+// ============================================
+// ГЛОБАЛЬНЫЕ УТИЛИТЫ (app.js)
+// ============================================
+
 /**
  * Превращает любую ссылку Google Drive в прямую ссылку для картинки
  * Использует домен lh3.googleusercontent.com для обхода защиты от хотлинкинга
  */
 function convertGoogleDriveUrl(url) {
-    // 1. ‡àùèòà îò ïóñòûõ çíà÷åíèé
+    // 1. Защита от пустых значений
     if (!url || typeof url !== 'string') return '';
 
-    // 2. …ñëè ýòî çàãëóøêà - âîçâðàùàåì êàê åñòü
+    // 2. Если это заглушка - возвращаем как есть
     if (url.includes('placehold.co')) return url;
 
-    // 3. …ñëè ýòî óæå "âîëøåáíàß" ññûëêà lh3 - âîçâðàùàåì
+    // 3. Если это уже "волшебная" ссылка lh3 - возвращаем
     if (url.includes('lh3.googleusercontent.com')) return url;
 
-    // 4. ˆùåì ID ôàéëà
+    // 4. Ищем ID файла
     const idMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || 
                     url.match(/id=([a-zA-Z0-9_-]+)/) ||
                     url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
-                    url.match(/id=([a-zA-Z0-9_-]+)/); // îâòîð äëß íàäåæíîñòè
+                    url.match(/id=([a-zA-Z0-9_-]+)/); // Повтор для надежности
 
     if (idMatch && idMatch[1]) {
-        // !!! ‚Ž’ ƒ‹€‚Ž… ˆ‡Œ……ˆ… !!!
-        // ‚ìåñòî drive.google.com èñïîëüçóåì lh3.googleusercontent.com/d/
+        // !!! ВОТ ГЛАВНОЕ ИЗМЕНЕНИЕ !!!
+        // Вместо drive.google.com используем lh3.googleusercontent.com/d/
         return `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
     }
 
