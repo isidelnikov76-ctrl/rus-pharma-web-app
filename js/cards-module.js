@@ -1,5 +1,5 @@
 // ============================================
-// МОДУЛЬ ФЛЭШ-КАРТ (FIXED & COMPLETE)
+// МОДУЛЬ ФЛЭШ-КАРТ (FIXED DATA KEYS)
 // ============================================
 
 let currentCards = [];
@@ -11,10 +11,17 @@ let cardStats = { know: 0, repeat: 0 };
 // Инициализация модуля
 function initCardsModule() {
     console.log("💊 [Cards] Инициализация модуля...");
+    
+    // Проверка данных перед стартом
+    if (!window.appData || (!window.appData.cards && !window.appData.drugs)) {
+        console.warn("⚠️ [Cards] Данные не найдены (ни .cards, ни .drugs)");
+        const flashcardEl = document.getElementById('flashcard');
+        if (flashcardEl) flashcardEl.innerHTML = '<div style="padding:20px; text-align:center;">Данные загружаются...</div>';
+        return;
+    }
+
     loadCardStats();
     populateCategories();
-    
-    // Сброс в начало
     resetCardsState();
     loadCards('all');
 }
@@ -25,33 +32,26 @@ function resetCardsState() {
     isCardFlipped = false;
     cardView = 'single';
     
-    // Сбрасываем переворот карты визуально
     const cardEl = document.getElementById('flashcard');
     if (cardEl) cardEl.classList.remove('flipped');
 }
 
-// Функция ВЫХОДА (Сброс + Меню)
+// Функция ВЫХОДА
 function quitCardsModule() {
     resetCardsState();
-    
-    // Сбрасываем фильтр категорий на "Все"
     const catSelect = document.getElementById('categoryFilter');
     if (catSelect) catSelect.value = 'all';
-    
-    // Возвращаемся в меню
     showSection('menu');
 }
 
-// Программное добавление кнопки "В меню"
+// Добавление кнопки "В меню"
 function injectExitButton() {
     const container = document.getElementById('singleCardView');
     if (!container) return;
 
-    // Удаляем старую кнопку, если есть
     const existingBtn = document.getElementById('btnExitCards');
     if (existingBtn) existingBtn.remove();
 
-    // Создаем новую
     const exitBtn = document.createElement('button');
     exitBtn.id = 'btnExitCards';
     exitBtn.innerHTML = '🏠 В меню';
@@ -77,10 +77,12 @@ function injectExitButton() {
 }
 
 function populateCategories() {
-    // Используем window.appData (глобальный объект)
-    if (!window.appData || !window.appData.drugs) return;
+    // ВАЖНО: Ищем cards, а если нет - drugs (для совместимости)
+    const sourceData = window.appData.cards || window.appData.drugs || [];
+    
+    if (sourceData.length === 0) return;
 
-    const categories = [...new Set(window.appData.drugs.map(d => d.category))];
+    const categories = [...new Set(sourceData.map(d => d.category))];
     const select = document.getElementById('categoryFilter');
     
     if (!select) return;
@@ -98,17 +100,19 @@ function populateCategories() {
 }
 
 function loadCards(category = 'all') {
-    const data = window.appData;
-    if (!data || !data.drugs || data.drugs.length === 0) {
+    // ВАЖНО: Правильный ключ данных
+    const sourceData = window.appData.cards || window.appData.drugs || [];
+
+    if (sourceData.length === 0) {
         const flashcardEl = document.getElementById('flashcard');
         if (flashcardEl) flashcardEl.innerHTML = '<div style="padding:20px; text-align:center;">Нет данных</div>';
         return;
     }
 
     if (category === 'all') {
-        currentCards = [...data.drugs];
+        currentCards = [...sourceData];
     } else {
-        currentCards = data.drugs.filter(d => d.category === category);
+        currentCards = sourceData.filter(d => d.category === category);
     }
     
     currentCardIndex = 0;
@@ -165,27 +169,24 @@ function updateCardsProgressBar() {
     progressFill.style.width = `${percent}%`;
 }
 
-// === ОТРИСОВКА ОДНОЙ КАРТЫ С ЛОГАМИ ===
 function showCard(index) {
     if (index < 0 || index >= currentCards.length) return;
     
     const card = currentCards[index];
     
-    // --- ЛОГИРОВАНИЕ ---
-    console.group(`🃏 Карта #${index + 1}: ${card.name || card.title}`);
-    console.log("Данные карты:", card);
-    
+    // --- Логи для проверки ---
+    console.log(`Show Card: ${card.title || card.name}`, card);
+
     const cardEl = document.getElementById('flashcard');
-    
     if (cardEl) cardEl.classList.remove('flipped');
     isCardFlipped = false;
     
     document.getElementById('cardIndex').textContent = index + 1;
     document.getElementById('cardCategory').textContent = card.category;
-    document.getElementById('drugName').textContent = card.name;
+    document.getElementById('drugName').textContent = card.title || card.name;
     
     const innEl = document.getElementById('drugINN_front');
-    if (innEl) innEl.textContent = card.inn || card.subtitle || '';
+    if (innEl) innEl.textContent = card.subtitle || card.inn || '';
     
     // --- КАРТИНКА ---
     let img = document.getElementById('drugImage');
@@ -193,26 +194,22 @@ function showCard(index) {
     const imgContainer = img ? img.parentElement : null;
 
     if (imgContainer) {
-        // Проверяем все возможные поля
-        const rawUrl = card.imageUrl || card.image || card.url || card['Фото_URL'];
-        console.log("🔗 Сырая ссылка:", rawUrl);
-
+        const rawUrl = card.image || card.imageUrl || card.url;
+        
+        // Используем конвертер из app.js
         const directUrl = (typeof convertGoogleDriveUrl === 'function') 
             ? convertGoogleDriveUrl(rawUrl) 
             : rawUrl;
-            
-        console.log("🚀 Обработанная ссылка:", directUrl);
 
         if (directUrl && directUrl.length > 5) {
-            // Если картинки нет - создаем
             if (!img) {
                 img = document.createElement('img');
                 img.id = 'drugImage';
                 imgContainer.insertBefore(img, placeholder);
             }
 
-            img.alt = card.name || card.title;
-            img.setAttribute('referrerpolicy', 'no-referrer'); // Хак для Google Drive
+            img.alt = card.title || card.name;
+            img.setAttribute('referrerpolicy', 'no-referrer');
             img.src = directUrl;
             
             Object.assign(img.style, {
@@ -224,65 +221,54 @@ function showCard(index) {
                 margin: '10px auto'
             });
             
-            // Зум
             img.onclick = (e) => {
                 e.stopPropagation();
                 if (typeof openImageModal === 'function') openImageModal(directUrl);
             };
 
-            // Ошибка загрузки
             img.onerror = function() {
-                console.error("❌ Не удалось загрузить картинку:", directUrl);
                 this.style.display = 'none';
                 if (placeholder) {
                     placeholder.style.display = 'flex';
                     placeholder.textContent = '❌'; 
                 }
             };
-            
-            // Успех
-            img.onload = function() {
-                console.log("✅ Картинка отрисована успешно");
-            };
 
             if (placeholder) placeholder.style.display = 'none';
             
         } else {
-            console.warn("⚠️ Ссылка на картинку пустая или слишком короткая");
             if (img) img.style.display = 'none';
             if (placeholder) {
                 placeholder.style.display = 'flex';
-                placeholder.textContent = (typeof getCategoryIcon === 'function') ? getCategoryIcon(card.category) : '💊';
+                placeholder.textContent = getCategoryIcon(card.category);
             }
         }
     }
-    console.groupEnd();
 
     // Обратная сторона
-    document.getElementById('drugName_back').textContent = card.name;
+    document.getElementById('drugName_back').textContent = card.title || card.name;
     const badgeEl = document.getElementById('drugForm_badge');
     if (badgeEl) badgeEl.textContent = card.form;
     
-    document.getElementById('drugDosage').textContent = card.dosage;
-    document.getElementById('drugIndications').textContent = card.indications;
-    document.getElementById('drugContra').textContent = card.contraindications;
-    document.getElementById('drugSideEffects').textContent = card.sideEffects;
-    document.getElementById('drugField').textContent = card.fieldNotes || card.fieldNote;
+    document.getElementById('drugDosage').textContent = card.dosage || '-';
+    document.getElementById('drugIndications').textContent = card.indications || '-';
+    document.getElementById('drugContra').textContent = card.contraindications || '-';
+    document.getElementById('drugSideEffects').textContent = card.sideEffects || '-';
+    document.getElementById('drugField').textContent = card.fieldNote || card.fieldNotes || '-';
 }
 
-// === КАТАЛОГ (GRID) ===
 function renderGrid() {
     const grid = document.getElementById('cardsGrid');
     if (!grid) return;
     
+    const sourceData = window.appData.cards || window.appData.drugs || [];
     const results = JSON.parse(localStorage.getItem('cardResults') || '[]');
     const totalLearned = results.filter(r => r.status === 'know').length;
     
-    // Статистика сверху
     grid.innerHTML = `
         <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: space-around; text-align: center;">
             <div>
-                <div style="font-size: 20px; font-weight: bold; color: #1a3a52;">${window.appData.drugs.length}</div>
+                <div style="font-size: 20px; font-weight: bold; color: #1a3a52;">${sourceData.length}</div>
                 <div style="font-size: 12px; color: #666;">Всего</div>
             </div>
             <div>
@@ -296,35 +282,21 @@ function renderGrid() {
     const container = document.getElementById('gridItemsContainer');
 
     currentCards.forEach((card, index) => {
-        const status = results.find(r => r.drugId === card.id || r.drug === card.name);
-        let statusIcon = '';
-        let borderColor = '#eee';
-        
-        if (status && status.status === 'know') {
-            statusIcon = '<span style="color:#28a745; position:absolute; top:5px; right:5px;">✅</span>';
-            borderColor = '#d4edda';
-        } else if (status && status.status === 'dontknow') {
-            statusIcon = '<span style="color:#dc3545; position:absolute; top:5px; right:5px;">↻</span>';
-            borderColor = '#f8d7da';
-        }
-
         const item = document.createElement('div');
         item.className = 'grid-card-item';
         
         Object.assign(item.style, {
-            border: `2px solid ${borderColor}`,
+            border: '2px solid #eee',
             borderRadius: '10px',
             padding: '15px 10px',
             textAlign: 'center',
             background: 'white',
-            position: 'relative',
             cursor: 'pointer'
         });
         
         item.innerHTML = `
-            ${statusIcon}
             <div style="font-size: 30px; margin-bottom: 5px;">${getCategoryIcon(card.category)}</div>
-            <h4 style="margin: 5px 0; font-size: 14px; color: #333;">${card.name}</h4>
+            <h4 style="margin: 5px 0; font-size: 14px; color: #333;">${card.title || card.name}</h4>
         `;
         
         item.onclick = () => {
@@ -335,23 +307,18 @@ function renderGrid() {
         container.appendChild(item);
     });
 
-    // Кнопка ВЫХОДА в каталоге
     const exitBtn = document.createElement('button');
     exitBtn.innerHTML = "🏠 В меню";
     exitBtn.onclick = quitCardsModule;
-    
     Object.assign(exitBtn.style, {
         gridColumn: "1 / -1",
         marginTop: "20px",
         padding: "15px",
         background: "white",
-        color: "#666",
         border: "1px solid #ccc",
         borderRadius: "10px",
-        cursor: "pointer",
-        fontWeight: "bold"
+        cursor: "pointer"
     });
-    
     container.appendChild(exitBtn);
 }
 
@@ -369,7 +336,7 @@ function nextCard() {
         showCard(currentCardIndex);
         updateCardsProgressBar();
     } else {
-        showNotification('🎉 Карты закончились!', 'success');
+        alert('🎉 Карты закончились!');
     }
 }
 
@@ -384,63 +351,18 @@ function prevCard() {
 function markCard(status) {
     const currentDrug = currentCards[currentCardIndex];
     const results = JSON.parse(localStorage.getItem('cardResults') || '[]');
+    const id = currentDrug.id || currentDrug.name;
     
-    const newResults = results.filter(r => r.drugId !== currentDrug.id && r.drug !== currentDrug.name);
-    
+    const newResults = results.filter(r => r.drugId !== id);
     newResults.push({
-        drugId: currentDrug.id,
-        drug: currentDrug.name,
+        drugId: id,
         status: status,
         timestamp: Date.now()
     });
     
     localStorage.setItem('cardResults', JSON.stringify(newResults));
     loadCardStats();
-    
-    showNotification(status === 'know' ? '✅ Изучено' : '↻ На повтор', status === 'know' ? 'success' : 'warning');
-    
-    setTimeout(() => {
-        nextCard();
-    }, 400);
-}
-
-// === КРАСИВЫЕ УВЕДОМЛЕНИЯ ===
-function showNotification(message, type = 'info') {
-    const old = document.querySelector('.custom-notification');
-    if (old) old.remove();
-
-    const notification = document.createElement('div');
-    notification.className = 'custom-notification';
-    notification.textContent = message;
-    
-    Object.assign(notification.style, {
-        position: 'fixed',
-        bottom: '80px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        padding: '12px 24px',
-        background: type === 'success' ? 'rgba(40, 167, 69, 0.95)' : 'rgba(255, 193, 7, 0.95)',
-        color: type === 'success' ? 'white' : 'black',
-        borderRadius: '25px',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-        zIndex: '1000',
-        fontWeight: 'bold',
-        fontSize: '16px',
-        opacity: '0',
-        transition: 'opacity 0.3s ease',
-        pointerEvents: 'none'
-    });
-
-    document.body.appendChild(notification);
-    
-    requestAnimationFrame(() => {
-        notification.style.opacity = '1';
-    });
-    
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        setTimeout(() => notification.remove(), 300);
-    }, 1500);
+    setTimeout(() => nextCard(), 200);
 }
 
 function getCategoryIcon(category) {
@@ -463,11 +385,3 @@ function loadCardStats() {
     if (knowEl) knowEl.textContent = cardStats.know;
     if (repeatEl) repeatEl.textContent = cardStats.repeat;
 }
-
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-}
-// КОНЕЦ ФАЙЛА
