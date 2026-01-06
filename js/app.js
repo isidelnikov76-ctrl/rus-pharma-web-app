@@ -291,24 +291,24 @@ function zoomImage() {
  * Использует домен lh3.googleusercontent.com для обхода защиты от хотлинкинга
  */
 function convertGoogleDriveUrl(url) {
-    // 1. Защита от пустых значений
+    // 1. ‡àùèòà îò ïóñòûõ çíà÷åíèé
     if (!url || typeof url !== 'string') return '';
 
-    // 2. Если это заглушка - возвращаем как есть
+    // 2. …ñëè ýòî çàãëóøêà - âîçâðàùàåì êàê åñòü
     if (url.includes('placehold.co')) return url;
 
-    // 3. Если это уже "волшебная" ссылка lh3 - возвращаем
+    // 3. …ñëè ýòî óæå "âîëøåáíàß" ññûëêà lh3 - âîçâðàùàåì
     if (url.includes('lh3.googleusercontent.com')) return url;
 
-    // 4. Ищем ID файла
+    // 4. ˆùåì ID ôàéëà
     const idMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || 
                     url.match(/id=([a-zA-Z0-9_-]+)/) ||
                     url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
-                    url.match(/id=([a-zA-Z0-9_-]+)/); // Повтор для надежности
+                    url.match(/id=([a-zA-Z0-9_-]+)/); // îâòîð äëß íàäåæíîñòè
 
     if (idMatch && idMatch[1]) {
-        // !!! ВОТ ГЛАВНОЕ ИЗМЕНЕНИЕ !!!
-        // Вместо drive.google.com используем lh3.googleusercontent.com/d/
+        // !!! ‚Ž’ ƒ‹€‚Ž… ˆ‡Œ……ˆ… !!!
+        // ‚ìåñòî drive.google.com èñïîëüçóåì lh3.googleusercontent.com/d/
         return `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
     }
 
