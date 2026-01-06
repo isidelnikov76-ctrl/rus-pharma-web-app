@@ -184,73 +184,64 @@ function showCard(index) {
     if (innEl) innEl.textContent = card.inn || '';
     
     // --- КАРТИНКА ---
-    // ... (начало функции showCard без изменений)
-
-    // --- КАРТИНКА (ИСПРАВЛЕНО) ---
+    // === ЛОГИКА ОТОБРАЖЕНИЯ КАРТИНКИ (ИСПРАВЛЕННАЯ) ===
     let img = document.getElementById('drugImage');
     const placeholder = document.getElementById('imagePlaceholder');
-    const imgContainer = img ? img.parentElement : null;
+    const imgContainer = img.parentElement; // Получаем родителя картинки
 
-    if (imgContainer) {
-        // Ищем картинку в любом из возможных полей
-        const rawUrl = card.imageUrl || card.image || card.url;
+    // Используем глобальную функцию из app.js
+    const directUrl = (typeof convertGoogleDriveUrl === 'function') 
+        ? convertGoogleDriveUrl(card.imageUrl) 
+        : card.imageUrl;
 
-        const directUrl = (typeof convertGoogleDriveUrl === 'function') 
-            ? convertGoogleDriveUrl(rawUrl) 
-            : rawUrl;
-
-        if (directUrl && directUrl.length > 5) {
-            // Если картинки нет - создаем
-            if (!img) {
-                img = document.createElement('img');
-                img.id = 'drugImage';
-                imgContainer.insertBefore(img, placeholder);
-            }
-
-            img.alt = card.name || card.title;
-            
-            // ВАЖНО: Добавляем политику, чтобы Google не блокировал картинку
-            img.setAttribute('referrerpolicy', 'no-referrer');
-            img.src = directUrl;
-            
-            Object.assign(img.style, {
-                display: 'block',
-                maxWidth: '100%',
-                maxHeight: '220px',
-                objectFit: 'contain',
-                borderRadius: '8px',
-                margin: '10px auto'
-            });
-            
-            // Зум по клику
-            img.onclick = (e) => {
-                e.stopPropagation();
-                if (typeof openImageModal === 'function') openImageModal(directUrl);
-            };
-
-            // Обработка ошибки загрузки
-            img.onerror = function() {
-                this.style.display = 'none';
-                if (placeholder) {
-                    placeholder.style.display = 'flex';
-                    placeholder.textContent = '❌'; 
-                }
-            };
-
-            if (placeholder) placeholder.style.display = 'none';
-            
-        } else {
-            // Если ссылки нет
-            if (img) img.style.display = 'none';
+    if (directUrl && directUrl.length > 5) {
+        // 1. УДАЛЯЕМ старую картинку, чтобы сбросить любые ошибки загрузки
+        img.remove();
+        
+        // 2. СОЗДАЕМ новую картинку "с нуля"
+        img = document.createElement('img');
+        img.id = 'drugImage';
+        img.alt = card.name;
+        
+        // 3. СНАЧАЛА настраиваем маскировку (ДО установки src)
+        img.setAttribute('referrerpolicy', 'no-referrer');
+        img.referrerPolicy = 'no-referrer';
+        
+        // 4. Добавляем стили
+        img.style.display = 'block';
+        img.style.maxWidth = '100%';
+        img.style.height = 'auto';
+        img.style.borderRadius = '8px';
+        img.style.marginTop = '10px';
+        
+        // 5. Обработчик ошибки (если Google всё равно заблокирует)
+        img.onerror = function() {
+            this.style.display = 'none';
             if (placeholder) {
                 placeholder.style.display = 'flex';
-                // Показываем иконку категории или таблетку
-                placeholder.textContent = (typeof getCategoryIcon === 'function') ? getCategoryIcon(card.category) : '💊';
+                placeholder.textContent = '❌'; 
+                // Можно раскомментировать для отладки:
+                // console.log('Ошибка загрузки:', directUrl);
             }
+        };
+
+        // 6. И только ТЕПЕРЬ ставим ссылку (добавляем случайное число, чтобы сбить кэш)
+        img.src = directUrl; 
+
+        // 7. Вставляем картинку обратно в карточку (перед плейсхолдером)
+        imgContainer.insertBefore(img, placeholder);
+        
+        if (placeholder) placeholder.style.display = 'none';
+        
+    } else {
+        // Если ссылки нет
+        if (img) img.style.display = 'none';
+        if (placeholder) {
+            placeholder.style.display = 'flex';
+            placeholder.textContent = getCategoryIcon(card.category);
         }
     }
-
-    // ... (конец функции showCard без изменений: drugName_back и т.д.)
+    // ======================================
 
     // Обратная сторона
     document.getElementById('drugName_back').textContent = card.name;
@@ -463,4 +454,5 @@ function shuffleArray(array) {
         [array[i], array[j]] = [array[j], array[i]];
     }
 }
+
 
