@@ -167,80 +167,90 @@ function updateCardsProgressBar() {
 }
 
 // === ОТРИСОВКА ОДНОЙ КАРТЫ ===
+// ... внутри js/cards-module.js ...
+
 function showCard(index) {
     if (index < 0 || index >= currentCards.length) return;
     
     const card = currentCards[index];
+    
+    // === ЛОГИРОВАНИЕ ДЛЯ ОТЛАДКИ ===
+    console.group(`🃏 Рендер карты #${index}: ${card.title || card.name}`);
+    console.log("Сырой объект карты:", card);
+    console.log("Поля с картинками:", {
+        image: card.image,
+        imageUrl: card.imageUrl,
+        url: card.url,
+        photo_url: card['Фото_URL'] // Проверка на всякий случай
+    });
+    // ================================
+
     const cardEl = document.getElementById('flashcard');
-    
     if (cardEl) cardEl.classList.remove('flipped');
-    isCardFlipped = false;
+    isFlipped = false;
     
-    document.getElementById('cardIndex').textContent = index + 1;
-    document.getElementById('cardCategory').textContent = card.category;
-    document.getElementById('drugName').textContent = card.name;
+    document.getElementById('cardIndex').innerText = index + 1;
+    document.getElementById('cardCategory').innerText = card.category;
+    document.getElementById('drugName').innerText = card.title || card.name; // Поддержка обоих вариантов
     
-    const innEl = document.getElementById('drugINN_front');
-    if (innEl) innEl.textContent = card.inn || '';
-    
-    // --- КАРТИНКА ---
-    // === ЛОГИКА ОТОБРАЖЕНИЯ КАРТИНКИ (ИСПРАВЛЕННАЯ) ===
+    // ... текстовые поля (МНН, Дозировка и т.д. без изменений) ...
+
+    // --- БЛОК КАРТИНКИ С ЛОГАМИ ---
     let img = document.getElementById('drugImage');
     const placeholder = document.getElementById('imagePlaceholder');
-    const imgContainer = img.parentElement; // Получаем родителя картинки
+    const imgContainer = img ? img.parentElement : null;
 
-    // Используем глобальную функцию из app.js
-    const directUrl = (typeof convertGoogleDriveUrl === 'function') 
-        ? convertGoogleDriveUrl(card.imageUrl) 
-        : card.imageUrl;
+    if (imgContainer) {
+        // Пробуем достать ссылку из всех возможных полей
+        const rawUrl = card.image || card.imageUrl || card.url || card['Фото_URL'];
 
-    if (directUrl && directUrl.length > 5) {
-        // 1. УДАЛЯЕМ старую картинку, чтобы сбросить любые ошибки загрузки
-        img.remove();
-        
-        // 2. СОЗДАЕМ новую картинку "с нуля"
-        img = document.createElement('img');
-        img.id = 'drugImage';
-        img.alt = card.name;
-        
-        // 3. СНАЧАЛА настраиваем маскировку (ДО установки src)
-        img.setAttribute('referrerpolicy', 'no-referrer');
-        img.referrerPolicy = 'no-referrer';
-        
-        // 4. Добавляем стили
-        img.style.display = 'block';
-        img.style.maxWidth = '100%';
-        img.style.height = 'auto';
-        img.style.borderRadius = '8px';
-        img.style.marginTop = '10px';
-        
-        // 5. Обработчик ошибки (если Google всё равно заблокирует)
-        img.onerror = function() {
-            this.style.display = 'none';
-            if (placeholder) {
-                placeholder.style.display = 'flex';
-                placeholder.textContent = '❌'; 
-                // Можно раскомментировать для отладки:
-                // console.log('Ошибка загрузки:', directUrl);
+        console.log("🔗 Найденная сырая ссылка:", rawUrl);
+
+        const directUrl = (typeof convertGoogleDriveUrl === 'function') 
+            ? convertGoogleDriveUrl(rawUrl) 
+            : rawUrl;
+
+        console.log("🚀 Итоговая ссылка для src:", directUrl);
+
+        if (directUrl && directUrl.length > 5) {
+            if (!img) {
+                img = document.createElement('img');
+                img.id = 'drugImage';
+                imgContainer.insertBefore(img, placeholder);
             }
-        };
 
-        // 6. И только ТЕПЕРЬ ставим ссылку (добавляем случайное число, чтобы сбить кэш)
-        img.src = directUrl; 
+            img.style.display = 'block';
+            img.src = directUrl;
+            img.setAttribute('referrerpolicy', 'no-referrer'); // На всякий случай оставляем
+            
+            // Стили
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '220px';
+            img.style.objectFit = 'contain';
+            img.style.margin = '10px auto';
 
-        // 7. Вставляем картинку обратно в карточку (перед плейсхолдером)
-        imgContainer.insertBefore(img, placeholder);
-        
-        if (placeholder) placeholder.style.display = 'none';
-        
-    } else {
-        // Если ссылки нет
-        if (img) img.style.display = 'none';
-        if (placeholder) {
-            placeholder.style.display = 'flex';
-            placeholder.textContent = getCategoryIcon(card.category);
+            // Обработчики
+            img.onclick = (e) => {
+                e.stopPropagation();
+                if (typeof openImageModal === 'function') openImageModal(directUrl);
+            };
+
+            img.onload = () => console.log("✅ Картинка успешно загрузилась (onload)");
+            img.onerror = () => {
+                console.error("❌ Ошибка загрузки картинки (onerror). URL:", directUrl);
+                img.style.display = 'none';
+                if (placeholder) placeholder.style.display = 'flex';
+            };
+
+            if (placeholder) placeholder.style.display = 'none';
+        } else {
+            console.warn("⚠️ Нет ссылки на картинку для этого препарата");
+            if (img) img.style.display = 'none';
+            if (placeholder) placeholder.style.display = 'flex';
         }
     }
+    console.groupEnd(); // Конец лога карты
+}
     // ======================================
 
     // Обратная сторона
@@ -454,5 +464,6 @@ function shuffleArray(array) {
         [array[i], array[j]] = [array[j], array[i]];
     }
 }
+
 
 
