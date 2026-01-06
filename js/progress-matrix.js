@@ -27,7 +27,7 @@ const ProgressMatrix = (function() {
         ANALGESIA: { name: 'Анальгезия', shortName: 'Анальгез.', icon: '💊', color: '#6f42c1', block: 'PHARMACOLOGY' },
         INFUSION_THERAPY: { name: 'Инфузия', shortName: 'Инфузия', icon: '💧', color: '#00bcd4', block: 'PHARMACOLOGY' },
         ADRENALINE: { name: 'Адреналин', shortName: 'Адренал.', icon: '⚡', color: '#ff5722', block: 'PHARMACOLOGY' },
-        SPASMOLYTICS: { name: 'Спазмолитики', shortName: 'Спазмол.', icon: '🔄', color: '#795548', block: 'PHARMACOLOGY' },
+        SPASMOLITICA: { name: 'Спазмолитики', shortName: 'Спазмол.', icon: '🔄', color: '#795548', block: 'PHARMACOLOGY' },
         
         // ИНФЕКЦИИ
         VIRAL_INFECTIONS: { name: 'ОРВИ', shortName: 'ОРВИ', icon: '🤧', color: '#ff9800', block: 'INFECTIONS' },
