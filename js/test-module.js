@@ -2,6 +2,7 @@
 // МОДУЛЬ ТЕСТОВ  v3.0 (FINAL UX VERSION + RESET)
 // С кнопкой "Показать пояснение"
 // С интеграцией системы компетенций
+// Новая таблица компетенций: модель 8 - Адреналин; Модуль 13 - Анальгезия
 // ============================================
 
 let currentTestQuestion = 0;
@@ -248,7 +249,7 @@ function getCompetencyInfo(competencyId) {
         ANALGESIA: { name: 'Анальгезия', icon: '💊', color: '#6f42c1' },
         INFUSION_THERAPY: { name: 'Инфузия', icon: '💧', color: '#00bcd4' },
         ADRENALINE: { name: 'Адреналин', icon: '⚡', color: '#ff5722' },
-        SPASMOLYTICS: { name: 'Спазмолит.', icon: '🔄', color: '#795548' },
+        SPASMOLITICA: { name: 'Спазмолит.', icon: '🔄', color: '#795548' },
         
         // ИНФЕКЦИИ
         VIRAL_INFECTIONS: { name: 'ОРВИ', icon: '🤧', color: '#ff9800' },
@@ -502,7 +503,7 @@ function saveToProgressMatrix(competencyScores, testType) {
         'OBSTRUCTIVE_SHOCK', 'SEPTIC_SHOCK',
         // Фармакология
         'ANTIBIOTICS', 'ANTIHISTAMINES', 'NSAID', 'GLUCOCORTICOIDS', 
-        'ANTIDOTES', 'ANALGESIA', 'INFUSION_THERAPY', 'ADRENALINE', 'SPASMOLYTICS',
+        'ANTIDOTES', 'ANALGESIA', 'INFUSION_THERAPY', 'ADRENALINE', 'SPASMOLITICA',
         // Инфекции
         'VIRAL_INFECTIONS', 'EYE_EAR_INFECTIONS', 'TICK_INFECTIONS', 'RABIES',
         // Травма
