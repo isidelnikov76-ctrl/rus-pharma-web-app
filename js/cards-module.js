@@ -267,4 +267,206 @@ function showCard(index) {
     document.getElementById('drugIndications').textContent = card.indications;
     document.getElementById('drugContra').textContent = card.contraindications;
     document.getElementById('drugSideEffects').textContent = card.sideEffects;
-    document
+    document.getElementById('drugField').textContent = card.fieldNotes || card.fieldNote;
+}
+
+// === КАТАЛОГ (GRID) ===
+function renderGrid() {
+    const grid = document.getElementById('cardsGrid');
+    if (!grid) return;
+    
+    const results = JSON.parse(localStorage.getItem('cardResults') || '[]');
+    const totalLearned = results.filter(r => r.status === 'know').length;
+    
+    // Статистика сверху
+    grid.innerHTML = `
+        <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: space-around; text-align: center;">
+            <div>
+                <div style="font-size: 20px; font-weight: bold; color: #1a3a52;">${window.appData.drugs.length}</div>
+                <div style="font-size: 12px; color: #666;">Всего</div>
+            </div>
+            <div>
+                <div style="font-size: 20px; font-weight: bold; color: #28a745;">${totalLearned}</div>
+                <div style="font-size: 12px; color: #666;">Изучено</div>
+            </div>
+        </div>
+        <div id="gridItemsContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px;"></div>
+    `;
+    
+    const container = document.getElementById('gridItemsContainer');
+
+    currentCards.forEach((card, index) => {
+        const status = results.find(r => r.drugId === card.id || r.drug === card.name);
+        let statusIcon = '';
+        let borderColor = '#eee';
+        
+        if (status && status.status === 'know') {
+            statusIcon = '<span style="color:#28a745; position:absolute; top:5px; right:5px;">✅</span>';
+            borderColor = '#d4edda';
+        } else if (status && status.status === 'dontknow') {
+            statusIcon = '<span style="color:#dc3545; position:absolute; top:5px; right:5px;">↻</span>';
+            borderColor = '#f8d7da';
+        }
+
+        const item = document.createElement('div');
+        item.className = 'grid-card-item';
+        
+        Object.assign(item.style, {
+            border: `2px solid ${borderColor}`,
+            borderRadius: '10px',
+            padding: '15px 10px',
+            textAlign: 'center',
+            background: 'white',
+            position: 'relative',
+            cursor: 'pointer'
+        });
+        
+        item.innerHTML = `
+            ${statusIcon}
+            <div style="font-size: 30px; margin-bottom: 5px;">${getCategoryIcon(card.category)}</div>
+            <h4 style="margin: 5px 0; font-size: 14px; color: #333;">${card.name}</h4>
+        `;
+        
+        item.onclick = () => {
+            currentCardIndex = index;
+            setCardView('single');
+        };
+        
+        container.appendChild(item);
+    });
+
+    // Кнопка ВЫХОДА в каталоге
+    const exitBtn = document.createElement('button');
+    exitBtn.innerHTML = "🏠 В меню";
+    exitBtn.onclick = quitCardsModule;
+    
+    Object.assign(exitBtn.style, {
+        gridColumn: "1 / -1",
+        marginTop: "20px",
+        padding: "15px",
+        background: "white",
+        color: "#666",
+        border: "1px solid #ccc",
+        borderRadius: "10px",
+        cursor: "pointer",
+        fontWeight: "bold"
+    });
+    
+    container.appendChild(exitBtn);
+}
+
+function flipCard() {
+    const card = document.getElementById('flashcard');
+    if (card) {
+        card.classList.toggle('flipped');
+        isCardFlipped = !isCardFlipped;
+    }
+}
+
+function nextCard() {
+    if (currentCardIndex < currentCards.length - 1) {
+        currentCardIndex++;
+        showCard(currentCardIndex);
+        updateCardsProgressBar();
+    } else {
+        showNotification('🎉 Карты закончились!', 'success');
+    }
+}
+
+function prevCard() {
+    if (currentCardIndex > 0) {
+        currentCardIndex--;
+        showCard(currentCardIndex);
+        updateCardsProgressBar();
+    }
+}
+
+function markCard(status) {
+    const currentDrug = currentCards[currentCardIndex];
+    const results = JSON.parse(localStorage.getItem('cardResults') || '[]');
+    
+    const newResults = results.filter(r => r.drugId !== currentDrug.id && r.drug !== currentDrug.name);
+    
+    newResults.push({
+        drugId: currentDrug.id,
+        drug: currentDrug.name,
+        status: status,
+        timestamp: Date.now()
+    });
+    
+    localStorage.setItem('cardResults', JSON.stringify(newResults));
+    loadCardStats();
+    
+    showNotification(status === 'know' ? '✅ Изучено' : '↻ На повтор', status === 'know' ? 'success' : 'warning');
+    
+    setTimeout(() => {
+        nextCard();
+    }, 400);
+}
+
+// === КРАСИВЫЕ УВЕДОМЛЕНИЯ ===
+function showNotification(message, type = 'info') {
+    const old = document.querySelector('.custom-notification');
+    if (old) old.remove();
+
+    const notification = document.createElement('div');
+    notification.className = 'custom-notification';
+    notification.textContent = message;
+    
+    Object.assign(notification.style, {
+        position: 'fixed',
+        bottom: '80px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        padding: '12px 24px',
+        background: type === 'success' ? 'rgba(40, 167, 69, 0.95)' : 'rgba(255, 193, 7, 0.95)',
+        color: type === 'success' ? 'white' : 'black',
+        borderRadius: '25px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+        zIndex: '1000',
+        fontWeight: 'bold',
+        fontSize: '16px',
+        opacity: '0',
+        transition: 'opacity 0.3s ease',
+        pointerEvents: 'none'
+    });
+
+    document.body.appendChild(notification);
+    
+    requestAnimationFrame(() => {
+        notification.style.opacity = '1';
+    });
+    
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 300);
+    }, 1500);
+}
+
+function getCategoryIcon(category) {
+    const icons = {
+        'Антибиотики': '💊', 'Анальгетики': '💉', 'Антидоты': '🧪',
+        'Экстренные': '⚡', 'Антигистаминные': '🌸', 'Инструменты': '✂️',
+        'Расходники': '🩹', 'default': '💊'
+    };
+    return icons[category] || icons['default'];
+}
+
+function loadCardStats() {
+    const results = JSON.parse(localStorage.getItem('cardResults') || '[]');
+    cardStats.know = results.filter(r => r.status === 'know').length;
+    cardStats.repeat = results.filter(r => r.status === 'dontknow').length;
+    
+    const knowEl = document.getElementById('knowCount');
+    const repeatEl = document.getElementById('repeatCount');
+
+    if (knowEl) knowEl.textContent = cardStats.know;
+    if (repeatEl) repeatEl.textContent = cardStats.repeat;
+}
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
