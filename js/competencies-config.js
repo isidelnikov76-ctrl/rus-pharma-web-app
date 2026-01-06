@@ -1,6 +1,7 @@
 // ============================================
-// КОНФИГУРАЦИЯ КОМПЕТЕНЦИЙ v2.0
+// КОНФИГУРАЦИЯ КОМПЕТЕНЦИЙ v3.0
 // Расширенная система для Рабочей тетради
+// Обновлённая нумерация модулей
 // ============================================
 
 const COMPETENCIES_CONFIG = {
@@ -123,10 +124,10 @@ const COMPETENCIES_CONFIG = {
         icon: '⚡',
         color: '#ff5722',
         block: 'PHARMACOLOGY',
-        description: 'Препарат №1 в экстренной медицине'
+        description: 'Препарат №1 в экстренной медицине, СЛР'
     },
-    SPASMOLYTICS: {
-        id: 'SPASMOLYTICS',
+    SPASMOLITICA: {
+        id: 'SPASMOLITICA',
         name: 'Спазмолитики',
         shortName: 'Спазмолит.',
         icon: '🔄',
@@ -292,28 +293,28 @@ const COMPETENCY_BLOCKS = {
     }
 };
 
-// Маппинг модулей на компетенции (обновлённый)
+// Маппинг модулей на компетенции (обновлённый v3.0)
 const MODULE_TO_COMPETENCY = {
-    1: 'PHARMACOLOGY_BASICS',
-    2: 'ANTIBIOTICS',
-    3: 'ANTIHISTAMINES',          // Было SHOCK
-    4: 'EYE_EAR_INFECTIONS',      // Было WOUND_CARE
-    5: 'VIRAL_INFECTIONS',        // Было ANTIBIOTICS
-    6: 'NSAID',                   // Было ANALGESIA
-    7: 'GLUCOCORTICOIDS',         // Было SHOCK
-    9: 'ADRENALINE',              // Было SHOCK
-    10: 'SPASMOLYTICS',           // Было ANALGESIA
-    11: 'HEMORRHAGIC_SHOCK',      // Конкретный тип шока
-    12: 'INFUSION_THERAPY',       // Было SHOCK
-    13: 'ANTIDOTES',              // Было SHOCK
-    14: 'SEPTIC_SHOCK',           // Конкретный тип шока
-    15: 'TICK_INFECTIONS',        // Было ANTIBIOTICS
-    16: 'RABIES',                 // Было ANTIBIOTICS
-    17: 'CARDIAC_STROKE',         // Было EVACUATION
-    18: 'DETOX',                  // Было SHOCK
-    19: 'GUNSHOT_WOUNDS',         // Было HEMOSTASIS
-    20: 'BURNS',                  // Было WOUND_CARE
-    21: 'ANALGESIA'
+    1: 'PHARMACOLOGY_BASICS',      // Фармакологические основы
+    2: 'ANTIBIOTICS',              // Антибактериальная терапия
+    3: 'ANTIHISTAMINES',           // Антигистаминные препараты
+    4: 'EYE_EAR_INFECTIONS',       // Глазные и ушные инфекции
+    5: 'VIRAL_INFECTIONS',         // ОРВИ
+    6: 'NSAID',                    // НПВС
+    7: 'GLUCOCORTICOIDS',          // Глюкокортикостероиды
+    8: 'ADRENALINE',               // Адреналин (новая позиция)
+    9: 'SPASMOLITICA',             // Спазмолитики (новая позиция)
+    10: 'HEMORRHAGIC_SHOCK',       // Шок
+    11: 'INFUSION_THERAPY',        // Инфузионная терапия
+    12: 'ANTIDOTES',               // Антидоты
+    13: 'ANALGESIA',               // Анальгезия (новая позиция)
+    14: 'SEPTIC_SHOCK',            // Септический шок
+    15: 'TICK_INFECTIONS',         // Клещевые инфекции
+    16: 'RABIES',                  // Бешенство
+    17: 'CARDIAC_STROKE',          // Инфаркт и инсульт
+    18: 'DETOX',                   // Детоксикация
+    19: 'GUNSHOT_WOUNDS',          // Огнестрельные раны
+    20: 'BURNS',                   // Ожоги
 };
 
 // Экспорт
