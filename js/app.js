@@ -287,8 +287,7 @@ function zoomImage() {
 // ============================================
 
 /**
- * Превращает любую ссылку Google Drive в прямую ссылку для картинки
- * Использует домен lh3.googleusercontent.com для обхода защиты от хотлинкинга
+ * Превращает ссылку Google Drive в прямую ссылку для картинки
  */
 function convertGoogleDriveUrl(url) {
     // 1. Защита от пустых значений
@@ -297,17 +296,16 @@ function convertGoogleDriveUrl(url) {
     // 2. Если это заглушка - возвращаем как есть
     if (url.includes('placehold.co')) return url;
 
-    // 3. Если это уже "волшебная" ссылка lh3 - возвращаем
-    if (url.includes('lh3.googleusercontent.com')) return url;
+    // 3. Если ссылка уже прямая (lh3 или googleusercontent) - не трогаем
+    if (url.includes('googleusercontent.com')) return url;
 
-    // 4. Ищем ID файла
+    // 4. Ищем ID файла (поддерживает разные форматы ссылок)
     const idMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || 
-                    url.match(/id=([a-zA-Z0-9_-]+)/) ||
-                    url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+                    url.match(/id=([a-zA-Z0-9_-]+)/);
 
     if (idMatch && idMatch[1]) {
-        // Используем lh3.googleusercontent.com/d/ для обхода защиты
-        return `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
+        // ИСПОЛЬЗУЕМ САМЫЙ НАДЕЖНЫЙ ФОРМАТ
+        return `https://drive.google.com/uc?export=view&id=${idMatch[1]}`;
     }
 
     return url;
