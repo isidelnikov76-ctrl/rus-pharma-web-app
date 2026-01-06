@@ -184,23 +184,33 @@ function showCard(index) {
     if (innEl) innEl.textContent = card.inn || '';
     
     // --- КАРТИНКА ---
+    // ... (начало функции showCard без изменений)
+
+    // --- КАРТИНКА (ИСПРАВЛЕНО) ---
     let img = document.getElementById('drugImage');
     const placeholder = document.getElementById('imagePlaceholder');
     const imgContainer = img ? img.parentElement : null;
 
     if (imgContainer) {
+        // Ищем картинку в любом из возможных полей
+        const rawUrl = card.imageUrl || card.image || card.url;
+
         const directUrl = (typeof convertGoogleDriveUrl === 'function') 
-            ? convertGoogleDriveUrl(card.imageUrl) 
-            : card.imageUrl;
+            ? convertGoogleDriveUrl(rawUrl) 
+            : rawUrl;
 
         if (directUrl && directUrl.length > 5) {
-            img.remove();
-            img = document.createElement('img');
-            img.id = 'drugImage';
-            img.alt = card.name;
+            // Если картинки нет - создаем
+            if (!img) {
+                img = document.createElement('img');
+                img.id = 'drugImage';
+                imgContainer.insertBefore(img, placeholder);
+            }
+
+            img.alt = card.name || card.title;
             
+            // ВАЖНО: Добавляем политику, чтобы Google не блокировал картинку
             img.setAttribute('referrerpolicy', 'no-referrer');
-            img.referrerPolicy = 'no-referrer';
             img.src = directUrl;
             
             Object.assign(img.style, {
@@ -212,11 +222,13 @@ function showCard(index) {
                 margin: '10px auto'
             });
             
+            // Зум по клику
             img.onclick = (e) => {
                 e.stopPropagation();
                 if (typeof openImageModal === 'function') openImageModal(directUrl);
             };
 
+            // Обработка ошибки загрузки
             img.onerror = function() {
                 this.style.display = 'none';
                 if (placeholder) {
@@ -225,17 +237,20 @@ function showCard(index) {
                 }
             };
 
-            imgContainer.insertBefore(img, placeholder);
             if (placeholder) placeholder.style.display = 'none';
             
         } else {
+            // Если ссылки нет
             if (img) img.style.display = 'none';
             if (placeholder) {
                 placeholder.style.display = 'flex';
-                placeholder.textContent = getCategoryIcon(card.category);
+                // Показываем иконку категории или таблетку
+                placeholder.textContent = (typeof getCategoryIcon === 'function') ? getCategoryIcon(card.category) : '💊';
             }
         }
     }
+
+    // ... (конец функции showCard без изменений: drugName_back и т.д.)
 
     // Обратная сторона
     document.getElementById('drugName_back').textContent = card.name;
@@ -448,3 +463,4 @@ function shuffleArray(array) {
         [array[i], array[j]] = [array[j], array[i]];
     }
 }
+
