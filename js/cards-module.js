@@ -1,5 +1,5 @@
 // ============================================
-// МОДУЛЬ ФЛЭШ-КАРТ (FULL DEBUG VERSION)
+// МОДУЛЬ ФЛЭШ-КАРТ (FIXED & COMPLETE)
 // ============================================
 
 let currentCards = [];
@@ -470,3 +470,4 @@ function shuffleArray(array) {
         [array[i], array[j]] = [array[j], array[i]];
     }
 }
+// КОНЕЦ ФАЙЛА
