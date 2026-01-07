@@ -1,70 +1,54 @@
 // ============================================
-// APP.JS - Главный файл приложения
-// Версия 2.1 - С матрицей прогресса
-// ============================================
-// ============================================
-// APP.JS (FIXED SYNC & INIT)
+// APP.JS (ВЕРСИЯ С РАБОЧИМИ КАРТИНКАМИ)
 // ============================================
 
-// 1. Глобальные переменные (доступны везде)
 window.appData = {};
 window.currentUser = null;
 
-// 2. Функция обновления (ОБЪЯВЛЕНА ГЛОБАЛЬНО)
+// Глобальная функция для кнопки "Обновить"
 window.syncData = function() {
-    console.log("🔄 Принудительное обновление...");
-    const btn = document.querySelector('.update-btn');
+    console.log("🔄 Обновление...");
+    const btn = document.querySelector('.update-btn'); // Если есть класс
     if (btn) btn.innerText = "⏳...";
-    localStorage.removeItem('appData_cache'); // Если был кэш
+    localStorage.removeItem('appData_cache');
     location.reload();
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("🚀 [App] DOM загружен.");
-    
-    // Восстановление пользователя
+    // Восстанавливаем пользователя
     const savedUser = localStorage.getItem('activeUser');
     if (savedUser) {
-        try { window.currentUser = JSON.parse(savedUser); } 
-        catch (e) { console.error("Ошибка чтения юзера", e); }
+        try { window.currentUser = JSON.parse(savedUser); } catch (e) {}
     }
     
-    // Запуск приложения
     initApp();
 });
 
 function initApp() {
-    // Проверка наличия загрузчика
+    console.log("🚀 [App] Старт...");
+    
     if (typeof loadData !== 'function') {
-        alert("Ошибка: Файл data-loader.js не подключен!");
+        alert("Ошибка: data-loader.js не найден!");
         return;
     }
     
-    // Показываем загрузку
     const loading = document.getElementById('loading');
     if (loading) loading.style.display = 'flex';
 
-    // ЗАГРУЗКА ДАННЫХ
     loadData().then(data => {
-        // 1. Сохраняем данные
         window.appData = data;
-        console.log("✅ [App] Данные сохранены глобально:", Object.keys(window.appData));
+        console.log("✅ [App] Данные загружены:", Object.keys(data));
         
-        // 2. Скрываем экран загрузки
         if (loading) loading.style.display = 'none';
 
-        // 3. Запускаем модули (ТОЛЬКО СЕЙЧАС)
-        safeInit('initTestModule');
-        safeInit('initCardsModule');
-        safeInit('initCasesModule');
+        // Запуск модулей
+        if (typeof initTestModule === 'function') initTestModule();
+        if (typeof initCardsModule === 'function') initCardsModule();
+        if (typeof initCasesModule === 'function') initCasesModule();
         
-        // 4. Обновляем интерфейс пользователя
         updateUserHeader();
 
-    }).catch(error => {
-        console.error("🔥 [App] Критическая ошибка:", error);
-        if (loading) loading.innerHTML = '<p style="color:white">Ошибка загрузки. Проверьте интернет.</p><button onclick="location.reload()">Повторить</button>';
-    });
+    }).catch(console.error);
 
     // Навигация
     document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -72,45 +56,45 @@ function initApp() {
     });
 }
 
-// Безопасный запуск модулей
-function safeInit(functionName) {
-    if (typeof window[functionName] === 'function') {
-        try {
-            console.log(`▶️ Запуск ${functionName}...`);
-            window[functionName]();
-        } catch (e) {
-            console.error(`❌ Ошибка в ${functionName}:`, e);
-        }
-    } else {
-        console.warn(`⚠️ Функция ${functionName} не найдена`);
-    }
-}
-
 function showSection(id) {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     
-    const target = document.getElementById(id);
-    if (target) target.classList.add('active');
+    const t = document.getElementById(id);
+    if (t) t.classList.add('active');
     
-    const btn = document.querySelector(`button[data-section="${id}"]`);
-    if (btn) btn.classList.add('active');
+    const b = document.querySelector(`button[data-section="${id}"]`);
+    if (b) b.classList.add('active');
 }
 
 function updateUserHeader() {
-    const el = document.querySelector('.user-info');
-    if (el && window.currentUser) {
-        // Простая метка пользователя
-        const nameSpan = document.getElementById('userName');
-        if(nameSpan) nameSpan.innerText = window.currentUser.displayName || window.currentUser.id;
+    if (window.currentUser) {
+        const el = document.getElementById('userName'); // Убедись, что такой ID есть в HTML
+        if (el) el.innerText = window.currentUser.displayName || window.currentUser.id;
     }
 }
 
-// Хак для картинок (оставляем, он рабочий)
+/**
+ * ГЛАВНОЕ ИСПРАВЛЕНИЕ: Конвертер ссылок
+ * Превращает ссылку "view?usp=sharing" в ссылку "thumbnail", которую Google разрешает показывать.
+ */
 function convertGoogleDriveUrl(url) {
     if (!url || typeof url !== 'string') return '';
-    if (url.includes('googleusercontent.com')) return url;
-    const idMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
-    if (idMatch && idMatch[1]) return `https://googleusercontent.com/profile/picture/0${idMatch[1]}`;
+    
+    // Если это заглушка
+    if (url.includes('placehold.co')) return url;
+
+    // Ищем ID файла (набор букв и цифр)
+    // Поддерживает форматы: /d/ID, id=ID, file/d/ID
+    const idMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || 
+                    url.match(/id=([a-zA-Z0-9_-]+)/) ||
+                    url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+
+    if (idMatch && idMatch[1]) {
+        // МЕТОД THUMBNAIL (Самый надежный в 2025 году)
+        // sz=w1000 означает "ширина 1000px" (хорошее качество)
+        return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w1000`;
+    }
+
     return url;
 }
