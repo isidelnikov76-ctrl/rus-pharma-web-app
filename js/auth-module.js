@@ -127,7 +127,7 @@ const AuthModule = (function() {
     // ========================================
 
     /**
-     * Регистрация нового курсанта
+     * Регистрация нового курсанта (GET для обхода CORS)
      */
     async function register(groupCode, fullName) {
         if (!isOnline) {
@@ -144,15 +144,9 @@ const AuthModule = (function() {
         }
         
         try {
-            const response = await fetchWithTimeout(CONFIG.API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'register',
-                    groupCode: groupCode.toUpperCase(),
-                    fullName: fullName.trim()
-                })
-            });
+            // Используем GET вместо POST для обхода CORS
+            const url = `${CONFIG.API_URL}?action=register&groupCode=${encodeURIComponent(groupCode.toUpperCase())}&fullName=${encodeURIComponent(fullName.trim())}`;
+            const response = await fetchWithTimeout(url);
             
             if (response.success) {
                 // Сохраняем данные курсанта
@@ -183,7 +177,7 @@ const AuthModule = (function() {
     // ========================================
 
     /**
-     * Вход по ID и PIN
+     * Вход по ID и PIN (GET для обхода CORS)
      */
     async function login(cadetId, pinCode) {
         if (!isOnline) {
@@ -192,15 +186,9 @@ const AuthModule = (function() {
         }
         
         try {
-            const response = await fetchWithTimeout(CONFIG.API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'login',
-                    cadetId: cadetId.toUpperCase(),
-                    pinCode: pinCode
-                })
-            });
+            // Используем GET вместо POST для обхода CORS
+            const url = `${CONFIG.API_URL}?action=login&cadetId=${encodeURIComponent(cadetId.toUpperCase())}&pinCode=${encodeURIComponent(pinCode)}`;
+            const response = await fetchWithTimeout(url);
             
             if (response.success) {
                 currentCadet = response.cadet;
