@@ -403,6 +403,26 @@ function showTestResult(container) {
     // 2. Матрица прогресса компетенций (новый формат)
     saveToProgressMatrix(competencyScores, currentTestType);
 
+    // 3. Синхронизация с сервером (если авторизован)
+    if (typeof SyncModule !== 'undefined') {
+        // Сохраняем общий результат теста
+        SyncModule.saveTestResult(currentTestType, 'OVERALL', finalScorePercent, {
+            total: questions.length,
+            correct: testScore,
+            competencyScores: competencyScores
+        });
+        
+        // Сохраняем результаты по каждой компетенции
+        for (const [compId, score] of Object.entries(competencyScores)) {
+            SyncModule.saveTestResult(currentTestType, compId, score, {
+                questionsCount: competencyResults[compId]?.total || 0
+            });
+        }
+        
+        // Запускаем синхронизацию
+        SyncModule.syncNow().catch(err => console.warn('Ошибка синхронизации:', err));
+    }
+
     // Обновляем прогресс
     if (typeof updateProgress === 'function') updateProgress();
 
@@ -560,6 +580,11 @@ function saveToProgressMatrix(competencyScores, testType) {
     
     // Сохраняем обновлённую матрицу
     localStorage.setItem('progressMatrix', JSON.stringify(matrix));
+    
+    // Синхронизация матрицы с сервером
+    if (typeof SyncModule !== 'undefined') {
+        SyncModule.saveProgressMatrix(matrix);
+    }
     
     console.log('📊 Матрица прогресса обновлена:', matrix);
 }
