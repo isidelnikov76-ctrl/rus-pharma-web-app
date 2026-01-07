@@ -44,6 +44,20 @@ function showSection(sectionId) {
         document.getElementById('activeScenario').style.display = 'none';
         document.getElementById('scenarioResult').style.display = 'none';
     }
+    
+    // === ИСПРАВЛЕНИЕ: Рендер матрицы прогресса ===
+    if (sectionId === 'progress') {
+        // Рендерим матрицу компетенций
+        const matrixContainer = document.getElementById('competency-matrix-container');
+        if (matrixContainer && typeof ProgressMatrix !== 'undefined') {
+            ProgressMatrix.render(matrixContainer);
+        }
+        
+        // Обновляем остальную статистику
+        if (typeof updateProgress === 'function') {
+            updateProgress();
+        }
+    }
 }
 
 // Зум изображений в тестах
