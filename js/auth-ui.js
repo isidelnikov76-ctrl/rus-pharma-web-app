@@ -52,8 +52,8 @@ const AuthUI = (function() {
                 <div id="register-step-1">
                     <div class="auth-field">
                         <label for="register-group-code">Код группы</label>
-                        <input type="text" id="register-group-code" placeholder="Введите код от инструктора" maxlength="6" autocomplete="off">
-                        <div class="field-hint">Код состоит из 6 символов (буквы и цифры)</div>
+                        <input type="text" id="register-group-code" placeholder="Например: PHARMA-0126" maxlength="15" autocomplete="off">
+                        <div class="field-hint">Введите код группы от инструктора</div>
                         <div class="field-error" id="group-code-error"></div>
                     </div>
                     
