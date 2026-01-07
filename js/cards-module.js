@@ -1,152 +1,94 @@
 // ============================================
-// МОДУЛЬ КАРТ (VISUAL FIX)
+// МОДУЛЬ КАРТ (FINAL DISPLAY)
 // ============================================
-
 let currentCards = [];
-let currentCardIndex = 0;
-let isCardFlipped = false;
-let cardView = 'single'; 
+let currentIndex = 0;
+let isFlipped = false;
 
 function initCardsModule() {
-    console.log("💊 [Cards] Старт модуля...");
+    console.log("💊 Init Cards...");
+    // Берем данные из глобальной переменной
+    const data = window.appData.drugs || window.appData.cards;
     
-    // Пробуем найти данные
-    const sourceData = window.appData.drugs || window.appData.cards;
-    
-    if (!sourceData || sourceData.length === 0) {
-        console.warn("⚠️ [Cards] Данные не найдены!");
-        const el = document.getElementById('flashcard');
-        if (el) el.innerHTML = '<div style="padding:20px;text-align:center">Нет данных. Нажмите "Обновить".</div>';
+    if (!data || data.length === 0) {
+        document.getElementById('flashcard').innerHTML = '<div style="padding:20px;text-align:center">Нет данных</div>';
         return;
     }
     
-    console.log(`✅ [Cards] Найдено ${sourceData.length} препаратов`);
-    
-    populateCategories();
-    resetCardsState();
-    loadCards('all');
+    currentCards = data;
+    currentIndex = 0;
+    populateCategories(data);
+    showCard(0);
 }
 
-function resetCardsState() {
-    currentCardIndex = 0;
-    isCardFlipped = false;
-    cardView = 'single';
-    const cardEl = document.getElementById('flashcard');
-    if (cardEl) cardEl.classList.remove('flipped');
+function populateCategories(data) {
+    const cats = [...new Set(data.map(d => d.category))];
+    const sel = document.getElementById('categoryFilter');
+    if(!sel) return;
+    sel.innerHTML = '<option value="all">Все</option>';
+    cats.forEach(c => sel.innerHTML += `<option value="${c}">${c}</option>`);
 }
 
-function populateCategories() {
-    const sourceData = window.appData.drugs || window.appData.cards;
-    const categories = [...new Set(sourceData.map(d => d.category))];
-    const select = document.getElementById('categoryFilter');
-    if (!select) return;
-
-    while (select.options.length > 1) select.remove(1);
-    categories.forEach(cat => {
-        const option = document.createElement('option');
-        option.value = cat; option.textContent = cat;
-        select.appendChild(option);
-    });
-}
-
-function loadCards(category = 'all') {
-    const sourceData = window.appData.drugs || window.appData.cards;
-    if (category === 'all') currentCards = [...sourceData];
-    else currentCards = sourceData.filter(d => d.category === category);
-    
-    currentCardIndex = 0;
-    isCardFlipped = false;
-    updateCardsUI();
-}
-
-function updateCardsUI() {
-    document.getElementById('totalCards').innerText = currentCards.length;
-    
-    const singleView = document.getElementById('singleCardView');
-    const gridView = document.getElementById('gridCardView');
-    
-    if (cardView === 'single') {
-        if (singleView) singleView.style.display = 'block';
-        if (gridView) gridView.style.display = 'none';
-        showCard(currentCardIndex);
-    } else {
-        if (singleView) singleView.style.display = 'none';
-        if (gridView) gridView.style.display = 'block';
-        renderGrid();
-    }
-}
-
-function showCard(index) {
-    if (index < 0 || index >= currentCards.length) return;
-    const card = currentCards[index];
-    
-    const cardEl = document.getElementById('flashcard');
-    if (cardEl) cardEl.classList.remove('flipped');
-    isCardFlipped = false;
+function showCard(idx) {
+    if(idx < 0 || idx >= currentCards.length) return;
+    const card = currentCards[idx];
     
     // Тексты
-    document.getElementById('cardIndex').innerText = index + 1;
-    document.getElementById('cardCategory').innerText = card.category;
-    document.getElementById('drugName').innerText = card.name || card.title;
-    document.getElementById('drugName_back').innerText = card.name || card.title;
-    
-    document.getElementById('drugDosage').innerText = card.dosage || '-';
-    document.getElementById('drugIndications').innerText = card.indications || '-';
-    document.getElementById('drugContra').innerText = card.contraindications || '-';
-    
-    // КАРТИНКА (ГЛАВНЫЙ МОМЕНТ)
-    let img = document.getElementById('drugImage');
+    setText('drugName', card.title || card.name);
+    setText('cardCategory', card.category);
+    setText('cardIndex', idx + 1);
+    setText('totalCards', currentCards.length);
+    setText('drugName_back', card.title || card.name);
+    setText('drugDosage', card.dosage);
+    setText('drugIndications', card.indications);
+    setText('drugForm_badge', card.form);
+
+    // КАРТИНКА
+    const img = document.getElementById('drugImage');
     const ph = document.getElementById('imagePlaceholder');
-    const container = img ? img.parentElement : null;
+    const rawUrl = card.imageUrl || card.image;
     
-    if (container) {
-        // Берем сырую ссылку из CSV
-        const rawUrl = card.imageUrl || card.image;
-        
-        // Превращаем в "черный ход"
+    // Сбрасываем старое состояние
+    if(img) img.style.display = 'none';
+    if(ph) ph.style.display = 'flex';
+
+    if (rawUrl && rawUrl.length > 5 && img) {
+        // Конвертируем ссылку через app.js
         const finalUrl = (typeof convertGoogleDriveUrl === 'function') 
             ? convertGoogleDriveUrl(rawUrl) 
             : rawUrl;
             
-        console.log(`🖼️ [Image] ${card.name}: ${finalUrl}`); // Лог для проверки
+        console.log(`Картинка: ${finalUrl}`); // Для проверки в консоли
 
-        if (finalUrl && finalUrl.length > 10) {
-            if (!img) {
-                img = document.createElement('img');
-                img.id = 'drugImage';
-                container.insertBefore(img, ph);
-            }
-            
-            img.style.display = 'block';
-            img.src = finalUrl;
-            img.setAttribute('referrerpolicy', 'no-referrer'); // ОБЯЗАТЕЛЬНО
-            
-            if (ph) ph.style.display = 'none';
-        } else {
-            if (img) img.style.display = 'none';
-            if (ph) ph.style.display = 'flex';
-        }
+        img.onload = function() {
+            this.style.display = 'block';
+            if(ph) ph.style.display = 'none';
+        };
+        
+        img.setAttribute('referrerpolicy', 'no-referrer'); // ВАЖНО!
+        img.src = finalUrl;
     }
+    
+    const cardEl = document.getElementById('flashcard');
+    if(cardEl) cardEl.classList.remove('flipped');
+    isFlipped = false;
 }
 
-// Функции переключения и грида
-function flipCard() { const el = document.getElementById('flashcard'); if(el) el.classList.toggle('flipped'); }
-function nextCard() { if (currentCardIndex < currentCards.length-1) { currentCardIndex++; showCard(currentCardIndex); } }
-function prevCard() { if (currentCardIndex > 0) { currentCardIndex--; showCard(currentCardIndex); } }
-function filterCards() { loadCards(document.getElementById('categoryFilter').value); }
-function setCardView(v) { cardView = v; updateCardsUI(); }
+function setText(id, text) {
+    const el = document.getElementById(id);
+    if(el) el.innerText = text || '-';
+}
 
-function renderGrid() {
-    const grid = document.getElementById('cardsGrid');
-    if(!grid) return;
-    grid.innerHTML = ''; // Очистка
-    currentCards.forEach((c, idx) => {
-        const div = document.createElement('div');
-        div.style.border = '1px solid #ccc';
-        div.style.padding = '10px';
-        div.style.margin = '5px';
-        div.innerText = c.name || c.title;
-        div.onclick = () => { currentCardIndex = idx; setCardView('single'); };
-        grid.appendChild(div);
-    });
+function flipCard() { 
+    const el = document.getElementById('flashcard'); 
+    if(el) { isFlipped = !isFlipped; el.classList.toggle('flipped'); }
+}
+function nextCard() { if(currentIndex < currentCards.length-1) showCard(++currentIndex); }
+function prevCard() { if(currentIndex > 0) showCard(--currentIndex); }
+function filterCards() {
+    const val = document.getElementById('categoryFilter').value;
+    const all = window.appData.drugs || window.appData.cards;
+    currentCards = (val === 'all') ? all : all.filter(c => c.category === val);
+    currentIndex = 0;
+    showCard(0);
 }
