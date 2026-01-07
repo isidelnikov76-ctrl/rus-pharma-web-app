@@ -196,7 +196,7 @@
             },
             onSyncComplete: (result) => {
                 updateSyncStatus('synced');
-                console.log(`✅ Синхронизация: отправлено ${result.sent}, получено ${result.received}`);
+                console.log(`✅ Синхронизация: отправлено ${result.saved}, получено ${result.loaded}`);
             },
             onSyncError: (error) => {
                 updateSyncStatus('error');
