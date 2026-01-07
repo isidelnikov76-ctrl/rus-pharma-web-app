@@ -444,8 +444,7 @@ const SyncModule = (function() {
     }
 
     function getApiUrl() {
-        // Используем URL из AuthModule
-        return AuthModule.API_URL || 'https://script.google.com/macros/s/YOUR_ID/exec';
+        return 'https://script.google.com/macros/s/AKfycbwB0oYN70vH9sMnQItBL1rSVuVxF2t90Fx5A_9wWZjR3lrfSNPcmDVZuqOC7mfsO87x/exec';
     }
 
     // ========================================
