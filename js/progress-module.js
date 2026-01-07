@@ -15,7 +15,7 @@ function updateProgress() {
     // Используем правильный ID элемента
     const testsCompleteEl = document.getElementById('testsComplete');
     if (testsCompleteEl) {
-        testsCompleteEl.textContent = `${testResults.length}/20`;
+        testsCompleteEl.textContent = testResults.length;
     }
     
     if (testResults.length > 0) {
@@ -67,9 +67,10 @@ function updateAchievements() {
     
     const container = document.getElementById('achievements');
     if (container) {
+        // ИСПРАВЛЕНО: убраны inline-стили, чтобы CSS мог управлять отображением
         container.innerHTML = achievements.length 
-            ? achievements.map(a => `<div class="achievement-tag" style="display:inline-block; background:#e3f2fd; padding:5px 10px; margin:5px; border-radius:15px; font-size:14px;">${a}</div>`).join('')
-            : '<div style="color: #999; font-style:italic;">Пока нет достижений</div>';
+            ? achievements.map(a => `<div class="achievement-tag">${a}</div>`).join('')
+            : '<div class="no-achievements">Пока нет достижений</div>';
     }
 }
 
