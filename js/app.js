@@ -1,99 +1,89 @@
-// ============================================
-// APP.JS (ВЕРСИЯ С РАБОЧИМИ КАРТИНКАМИ)
-// ============================================
-
-window.appData = {};
-window.currentUser = null;
-
-// Глобальная функция для кнопки "Обновить"
-window.syncData = function() {
-    console.log("🔄 Обновление...");
-    const btn = document.querySelector('.update-btn'); // Если есть класс
-    if (btn) btn.innerText = "⏳...";
-    localStorage.removeItem('appData_cache');
-    location.reload();
-};
+// js/app.js
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Восстанавливаем пользователя
-    const savedUser = localStorage.getItem('activeUser');
-    if (savedUser) {
-        try { window.currentUser = JSON.parse(savedUser); } catch (e) {}
-    }
+    // Инициализация при загрузке страницы
+    loadData(); 
     
-    initApp();
+    // Инициализация навигации (показываем меню)
+    showSection('menu');
 });
 
-function initApp() {
-    console.log("🚀 [App] Старт...");
-    
-    if (typeof loadData !== 'function') {
-        alert("Ошибка: data-loader.js не найден!");
-        return;
-    }
-    
-    const loading = document.getElementById('loading');
-    if (loading) loading.style.display = 'flex';
-
-    loadData().then(data => {
-        window.appData = data;
-        console.log("✅ [App] Данные загружены:", Object.keys(data));
-        
-        if (loading) loading.style.display = 'none';
-
-        // Запуск модулей
-        if (typeof initTestModule === 'function') initTestModule();
-        if (typeof initCardsModule === 'function') initCardsModule();
-        if (typeof initCasesModule === 'function') initCasesModule();
-        
-        updateUserHeader();
-
-    }).catch(console.error);
-
-    // Навигация
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.onclick = () => showSection(btn.dataset.section);
+// Переключение разделов меню
+function showSection(sectionId) {
+    // Скрываем все секции
+    document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+        // Если уходим из сценария - сбрасываем его
+        if (section.id === 'activeScenario') {
+            section.style.display = 'none';
+        }
     });
-}
 
-function showSection(id) {
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    
-    const t = document.getElementById(id);
-    if (t) t.classList.add('active');
-    
-    const b = document.querySelector(`button[data-section="${id}"]`);
-    if (b) b.classList.add('active');
-}
+    // Скрываем модальные окна
+    const modal = document.getElementById('imageModal');
+    if (modal) modal.classList.remove('active');
 
-function updateUserHeader() {
-    if (window.currentUser) {
-        const el = document.getElementById('userName'); // Убедись, что такой ID есть в HTML
-        if (el) el.innerText = window.currentUser.displayName || window.currentUser.id;
+    // Показываем нужную секцию
+    const activeSection = document.getElementById(sectionId);
+    if (activeSection) {
+        activeSection.classList.add('active');
+    }
+
+    // Обновляем кнопки навигации
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.section === sectionId) {
+            btn.classList.add('active');
+        }
+    });
+
+    // Специальная логика для разделов
+    if (sectionId === 'menu') {
+        // Если вернулись в меню
+        document.getElementById('scenarioList').style.display = 'block';
+        document.getElementById('activeScenario').style.display = 'none';
+        document.getElementById('scenarioResult').style.display = 'none';
     }
 }
+
+// Зум изображений в тестах
+function zoomImage() {
+    const img = document.getElementById('questionImage');
+    if (img && img.src) {
+        openImageModal(img.src);
+    }
+}
+
+// app.js (добавить в самый низ)
+
+// ============================================
+// ГЛОБАЛЬНЫЕ УТИЛИТЫ (app.js)
+// ============================================
 
 /**
- * ГЛАВНОЕ ИСПРАВЛЕНИЕ: Конвертер ссылок
- * Превращает ссылку "view?usp=sharing" в ссылку "thumbnail", которую Google разрешает показывать.
+ * Превращает любую ссылку Google Drive в прямую ссылку для картинки
+ * Использует домен lh3.googleusercontent.com для обхода защиты от хотлинкинга
  */
 function convertGoogleDriveUrl(url) {
+    // 1. Защита от пустых значений
     if (!url || typeof url !== 'string') return '';
-    
-    // Если это заглушка
+
+    // 2. Если это заглушка - возвращаем как есть
     if (url.includes('placehold.co')) return url;
 
-    // Ищем ID файла (набор букв и цифр)
-    // Поддерживает форматы: /d/ID, id=ID, file/d/ID
+    // 3. Если это уже "волшебная" ссылка lh3 - возвращаем
+    if (url.includes('lh3.googleusercontent.com')) return url;
+
+    // 4. Ищем ID файла
     const idMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || 
                     url.match(/id=([a-zA-Z0-9_-]+)/) ||
-                    url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+                    url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
+                    url.match(/id=([a-zA-Z0-9_-]+)/); // Повтор для надежности
 
     if (idMatch && idMatch[1]) {
-        // МЕТОД THUMBNAIL (Самый надежный в 2025 году)
-        // sz=w1000 означает "ширина 1000px" (хорошее качество)
-        return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w1000`;
+        // !!! ВОТ ГЛАВНОЕ ИЗМЕНЕНИЕ !!!
+        // Вместо drive.google.com используем lh3.googleusercontent.com/d/
+        return `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
     }
 
     return url;
