@@ -190,7 +190,7 @@ function showCard(index) {
 
     if (imgContainer) {
         const directUrl = (typeof convertGoogleDriveUrl === 'function') 
-            ? convertGoogleDriveUrl(card.imageUrl) 
+            ? convertGoogleDriveUrl(card.image)
             : card.imageUrl;
 
         if (directUrl && directUrl.length > 5) {
@@ -448,3 +448,4 @@ function shuffleArray(array) {
         [array[i], array[j]] = [array[j], array[i]];
     }
 }
+
