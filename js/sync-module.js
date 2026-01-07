@@ -204,18 +204,15 @@ const SyncModule = (function() {
             
             console.log(`🔄 Синхронизация: ${unsyncedItems.length} записей для отправки`);
             
-            // Отправляем данные на сервер
-            const response = await fetch(getApiUrl(), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'fullSync',
-                    cadetId: cadet.id,
-                    localProgress: unsyncedItems,
-                    lastSyncTime: getLastSyncTime()
-                })
+            // Используем GET вместо POST для обхода CORS
+            const params = new URLSearchParams({
+                action: 'fullSync',
+                cadetId: cadet.id,
+                localProgress: JSON.stringify(unsyncedItems),
+                lastSyncTime: getLastSyncTime() || ''
             });
             
+            const response = await fetch(`${getApiUrl()}?${params.toString()}`);
             const result = await response.json();
             
             if (result.success) {
