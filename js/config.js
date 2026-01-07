@@ -4,7 +4,7 @@
 
 const CONFIG = {
     // URL API Google Sheets (çàìåíèòå íà âàø ïîñëå ïóáëèêàöèè ñêðèïòà)
-    API_URL: 'https://script.google.com/macros/s/AKfycbzRGWiefBNeBxZFVJsxYEz6SpVCmgbpTKNIX7reK0wVqNeWc_2AaTghiBLZjxSyi7uF/exec',
+    API_URL: 'https://script.google.com/macros/s/AKfycbwB0oYN70vH9sMnQItBL1rSVuVxF2t90Fx5A_9wWZjR3lrfSNPcmDVZuqOC7mfsO87x/exec',
     
     // ˆíòåðâàë àâòîîáíîâëåíèß (ìñ)
     SYNC_INTERVAL: 300000, // 5 ìèíóò
@@ -21,3 +21,4 @@ const CONFIG = {
     VERSION: '2.0.0'
 
 };
+
